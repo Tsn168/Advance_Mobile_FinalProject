@@ -55,6 +55,7 @@ lib/
 │   │   │   └── view_model/
 │   │   ├── profile/
 │   │   └── splash/
+│   ├── states/                 # Global app states
 │   ├── theme/                  # Design system
 │   └── widgets/                # Shared widgets
 ├── main.dart
