@@ -1,4 +1,4 @@
-import '../models/user.dart';
+import '../model/user/user.dart';
 
 /// User DTO — handles converting User data to/from Firebase format.
 /// DTO = Data Transfer Object (bridges between your app and the database).
