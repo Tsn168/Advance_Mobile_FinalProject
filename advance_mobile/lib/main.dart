@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'views/splash/prelaunch_splash_screen.dart';
 import 'views/tabs/home_tab.dart';
 import 'views/tabs/map_tab.dart';
 import 'views/tabs/plans_tab.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const MainNavigationScreen(),
+      home: const PrelaunchSplashScreen(nextScreen: MainNavigationScreen()),
     );
   }
 }
