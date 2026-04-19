@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../../../config/app_constants.dart';
+import '../../../../config/app_constants.dart';
 import '../../../../model/station/station.dart';
 import '../../../../data/repositories/station/station_repository.dart';
 import '../../../../services/error_handler.dart';

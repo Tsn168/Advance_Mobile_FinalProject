@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
-
-// AI generated code - do not modify by hand i use it for animations for prelaunch splash screen, it is not perfect but it is good enough for now, i will improve it later if needed
 
 import 'package:flutter/material.dart';
 
@@ -16,11 +13,14 @@ class PrelaunchSplashScreen extends StatefulWidget {
 
 class _PrelaunchSplashScreenState extends State<PrelaunchSplashScreen>
     with TickerProviderStateMixin {
+  static const Duration _splashDuration = Duration(milliseconds: 2400);
+
   late final AnimationController _introController;
   late final AnimationController _pulseController;
-  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _contentFadeAnimation;
   late final Animation<double> _introScaleAnimation;
   late final Animation<double> _pulseScaleAnimation;
+  late final Animation<Offset> _subtitleSlideAnimation;
 
   Timer? _navigationTimer;
 
@@ -30,29 +30,33 @@ class _PrelaunchSplashScreenState extends State<PrelaunchSplashScreen>
 
     _introController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 800),
     );
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1250),
+      duration: const Duration(milliseconds: 1100),
     );
 
-    _fadeAnimation = CurvedAnimation(
+    _contentFadeAnimation = CurvedAnimation(
       parent: _introController,
       curve: Curves.easeOutCubic,
     );
-    _introScaleAnimation = Tween<double>(begin: 0.92, end: 1.0).animate(
+    _introScaleAnimation = Tween<double>(begin: 0.88, end: 1.0).animate(
       CurvedAnimation(parent: _introController, curve: Curves.easeOutBack),
     );
-    _pulseScaleAnimation = Tween<double>(begin: 1.0, end: 1.04).animate(
+    _pulseScaleAnimation = Tween<double>(begin: 1.0, end: 1.025).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+    _subtitleSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
+          CurvedAnimation(parent: _introController, curve: Curves.easeOutCubic),
+        );
 
     _introController.forward();
     _pulseController.repeat(reverse: true);
 
     _navigationTimer = Timer(
-      const Duration(milliseconds: 2100),
+      _splashDuration,
       _navigateToMain,
     );
   }
@@ -64,7 +68,7 @@ class _PrelaunchSplashScreenState extends State<PrelaunchSplashScreen>
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: const Duration(milliseconds: 350),
         pageBuilder: (context, animation, secondaryAnimation) =>
             widget.nextScreen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -105,7 +109,7 @@ class _PrelaunchSplashScreenState extends State<PrelaunchSplashScreen>
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: FadeTransition(
-                opacity: _fadeAnimation,
+                opacity: _contentFadeAnimation,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -122,41 +126,25 @@ class _PrelaunchSplashScreenState extends State<PrelaunchSplashScreen>
                           child: child,
                         );
                       },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(28),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                          child: Container(
-                            width: 148,
-                            height: 148,
-                            decoration: BoxDecoration(
-                              color: colorScheme.surface.withValues(
-                                alpha: 0.42,
-                              ),
-                              borderRadius: BorderRadius.circular(28),
-                              border: Border.all(
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.16,
-                                ),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: colorScheme.shadow.withValues(
-                                    alpha: 0.12,
-                                  ),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
+                      child: Container(
+                        width: 138,
+                        height: 138,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colorScheme.surface.withValues(alpha: 0.96),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colorScheme.primary.withValues(alpha: 0.24),
+                              blurRadius: 26,
+                              spreadRadius: 2,
+                              offset: const Offset(0, 8),
                             ),
-                            child: Center(
-                              child: Icon(
-                                Icons.directions_bike_rounded,
-                                size: 72,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                          ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.directions_bike_rounded,
+                          size: 72,
+                          color: colorScheme.primary,
                         ),
                       ),
                     ),
@@ -172,11 +160,14 @@ class _PrelaunchSplashScreenState extends State<PrelaunchSplashScreen>
                           ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Smart rides for every city block',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.72),
+                      SlideTransition(
+                        position: _subtitleSlideAnimation,
+                        child: Text(
+                          'Smart rides for every city block',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurface.withValues(alpha: 0.72),
+                          ),
                       ),
                     ),
                     const SizedBox(height: 18),
