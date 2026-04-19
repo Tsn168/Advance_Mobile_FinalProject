@@ -6,6 +6,7 @@ import '../../../../config/app_constants.dart';
 import '../../../../model/booking/booking.dart';
 import '../../../../data/repositories/booking/booking_repository.dart';
 import '../../../../data/repositories/pass/pass_repository.dart';
+import '../../../../services/error_handler.dart';
 
 enum BookingFlowStatus {
   idle,
@@ -58,14 +59,14 @@ class BookingViewModel extends ChangeNotifier {
             onError: (Object error) {
               _state = AppState.error;
               _flowStatus = BookingFlowStatus.failed;
-              _errorMessage = ErrorHandler.handleError(error);
+              _errorMessage = ErrorHandlerService.handleError(error);
               notifyListeners();
             },
           );
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       notifyListeners();
     }
   }
@@ -113,7 +114,7 @@ class BookingViewModel extends ChangeNotifier {
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       notifyListeners();
       return false;
     }
@@ -146,7 +147,7 @@ class BookingViewModel extends ChangeNotifier {
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     notifyListeners();
   }
