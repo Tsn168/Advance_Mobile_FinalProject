@@ -1,0 +1,132 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    MVVM REFACTORING: BEFORE vs AFTER                         ║
+╔══════════════════════════════════════════════════════════════════════════════╗
+
+┌─────────────────────────────────┬─────────────────────────────────────────────┐
+│         BEFORE (Old)            │           AFTER (New) ✅                    │
+├─────────────────────────────────┼─────────────────────────────────────────────┤
+│ lib/                            │ lib/                                        │
+│ ├── config/                     │ ├── config/                                 │
+│ ├── dtos/                    ❌ │ ├── data/                              ✅   │
+│ │   ├── bike_dto.dart           │ │   ├── dtos/                               │
+│ │   ├── booking_dto.dart         │ │   │   ├── bike_dto.dart                  │
+│ │   └── ...                      │ │   │   ├── booking_dto.dart               │
+│ ├── models/                  ❌ │ │   │   └── ...                             │
+│ │   ├── bike.dart               │ │   └── repositories/                       │
+│ │   ├── booking.dart             │ │       ├── bike/                           │
+│ │   └── ...                      │ │       │   ├── bike_repository.dart        │
+│ ├── repositories/            ❌ │ │       │   └── bike_repository_mock.dart    │
+│ │   ├── base/                   │ │       ├── booking/                        │
+│ │   │   ├── pass_repository.dart│ │       ├── pass/                           │
+│ │   │   └── ...                  │ │       ├── station/                        │
+│ │   └── mock/                   │ │       └── user/                           │
+│ │       ├── mock_pass_repo.dart │ ├── model/                             ✅   │
+│ │       └── ...                  │ │   ├── bike/                               │
+│ ├── theme/                   ❌ │ │   │   └── bike.dart                        │
+│ ├── viewmodels/              ❌ │ │   ├── booking/                            │
+│ │   ├── pass_viewmodel.dart    │ │   │   └── booking.dart                    │
+│ │   ├── map_viewmodel.dart      │ │   ├── pass/                               │
+│ │   └── ...                      │ │   ├── station/                            │
+│ └── views/                   ❌ │ │   └── user/                               │
+│     ├── tabs/                   │ └── ui/                                ✅   │
+│     │   ├── home_tab.dart       │     ├── screens/                            │
+│     │   ├── map_tab.dart         │     │   ├── home/                           │
+│     │   └── ...                  │     │   │   ├── home_screen.dart            │
+│     └── splash/                 │     │   │   └── view_model/                 │
+│                                  │     │   │       └── booking_viewmodel.dart  │
+│                                  │     │   ├── map/                            │
+│                                  │     │   │   ├── map_screen.dart             │
+│                                  │     │   │   └── view_model/                 │
+│                                  │     │   │       ├── bike_viewmodel.dart     │
+│                                  │     │   │       └── map_viewmodel.dart      │
+│                                  │     │   ├── plans/                          │
+│                                  │     │   │   ├── plans_screen.dart           │
+│                                  │     │   │   └── view_model/                 │
+│                                  │     │   │       └── pass_viewmodel.dart     │
+│                                  │     │   ├── profile/                        │
+│                                  │     │   └── splash/                         │
+│                                  │     ├── theme/                              │
+│                                  │     └── widgets/                            │
+└─────────────────────────────────┴─────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              KEY IMPROVEMENTS                                 ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 1. CLEAR LAYER SEPARATION                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ BEFORE: Mixed folders (dtos, models, repositories, views)                    │
+│ AFTER:  Three clear layers (data/, model/, ui/)                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 2. FEATURE-BASED REPOSITORIES                                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ BEFORE: repositories/base/ and repositories/mock/ separated                  │
+│ AFTER:  data/repositories/pass/ contains interface + implementations         │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 3. CO-LOCATED VIEWMODELS                                                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ BEFORE: viewmodels/ folder separate from views/                              │
+│ AFTER:  ui/screens/plans/view_model/ next to plans_screen.dart               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 4. CONSISTENT NAMING                                                         │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ BEFORE: HomeTab, MapTab, PlansTab                                            │
+│ AFTER:  HomeScreen, MapScreen, PlansScreen                                   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 5. ORGANIZED MODELS                                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ BEFORE: models/bike.dart, models/pass.dart (flat)                            │
+│ AFTER:  model/bike/bike.dart, model/pass/pass.dart (organized)               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                            IMPORT PATH CHANGES                                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────┬────────────────────────────────────────┐
+│ BEFORE                              │ AFTER                                  │
+├─────────────────────────────────────┼────────────────────────────────────────┤
+│ import '../models/pass.dart';       │ import '../../model/pass/pass.dart';   │
+│ import '../viewmodels/pass_vm.dart';│ import 'view_model/pass_viewmodel.dart'│
+│ import '../repositories/base/...';  │ import '../../../data/repositories/...'│
+│ import '../theme/app_theme.dart';   │ import '../../theme/app_theme.dart';   │
+└─────────────────────────────────────┴────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              MVVM FLOW                                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+    ui/screens/plans/plans_screen.dart (VIEW)
+                    ↓
+    ui/screens/plans/view_model/pass_viewmodel.dart (VIEWMODEL)
+                    ↓
+    data/repositories/pass/pass_repository.dart (INTERFACE)
+                    ↓
+    data/repositories/pass/pass_repository_mock.dart (IMPLEMENTATION)
+                    ↓
+    data/dtos/pass_dto.dart (DTO)
+                    ↓
+    model/pass/pass.dart (DOMAIN MODEL)
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           STATISTICS                                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Files Moved:        38 files
+Imports Updated:    50+ import statements
+Tests Updated:      4 unit test files
+Documentation:      6 new documents created
+Old Imports Left:   0 (100% clean)
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         ✅ REFACTORING COMPLETE                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
