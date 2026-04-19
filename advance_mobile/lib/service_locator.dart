@@ -15,6 +15,8 @@ import 'ui/screens/plans/view_model/pass_viewmodel.dart';
 import 'ui/screens/map/view_model/map_viewmodel.dart';
 import 'ui/screens/map/view_model/bike_viewmodel.dart';
 import 'ui/screens/home/view_model/booking_viewmodel.dart';
+import 'ui/states/app_state.dart';
+import 'ui/states/navigation_state.dart';
 
 final getIt = GetIt.instance;
 
@@ -27,6 +29,10 @@ void setupServiceLocator() {
 
   // Shared mock store
   getIt.registerSingleton<MockDataStore>(MockDataStore());
+
+  // Register Global States (Singleton - shared across app)
+  getIt.registerLazySingleton<AppState>(() => AppState());
+  getIt.registerLazySingleton<NavigationState>(() => NavigationState());
 
   // Register Mock Repositories (for development/testing)
   // Replace with Firebase repositories when backend is ready
