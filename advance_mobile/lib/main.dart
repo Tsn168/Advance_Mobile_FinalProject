@@ -14,9 +14,11 @@ import 'ui/screens/home/home_screen.dart';
 import 'ui/screens/map/map_screen.dart';
 import 'ui/screens/plans/plans_screen.dart';
 import 'ui/screens/profile/profile_screen.dart';
+import 'services/firebase_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await FirebaseService.initialize();
   setupServiceLocator();
   runApp(const MyApp());
 }
