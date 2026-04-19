@@ -1,6 +1,11 @@
 /// App State Enum for managing loading states
 enum AppState { idle, loading, success, error }
 
+class AppConstants {
+  static const Duration mockNetworkDelay = Duration(milliseconds: 250);
+  static const String defaultUserId = 'user_reyu';
+}
+
 /// Error Handler Service
 class ErrorHandler {
   static String handleError(dynamic error) {
