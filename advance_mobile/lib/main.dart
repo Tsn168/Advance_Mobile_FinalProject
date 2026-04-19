@@ -7,6 +7,8 @@ import 'ui/screens/home/view_model/booking_viewmodel.dart';
 import 'ui/screens/map/view_model/bike_viewmodel.dart';
 import 'ui/screens/map/view_model/map_viewmodel.dart';
 import 'ui/screens/plans/view_model/pass_viewmodel.dart';
+import 'ui/states/app_state.dart';
+import 'ui/states/navigation_state.dart';
 import 'ui/screens/splash/prelaunch_splash_screen.dart';
 import 'ui/screens/home/home_screen.dart';
 import 'ui/screens/map/map_screen.dart';
@@ -26,6 +28,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // Global States (shared across entire app)
+        ChangeNotifierProvider(
+          create: (_) => getIt<AppState>(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => getIt<NavigationState>(),
+        ),
+        // Feature ViewModels
         ChangeNotifierProvider(
           create: (_) => getIt<PassViewModel>()..initialize(),
         ),
@@ -46,41 +56,29 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MainNavigationScreen extends StatefulWidget {
+class MainNavigationScreen extends StatelessWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
-
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentTabIndex = 0;
-
-  void _goToTab(int index) {
-    setState(() {
-      _currentTabIndex = index;
-    });
-  }
-
-  List<Widget> get _tabScreens {
-    return [
-      HomeScreen(
-        onNavigateToMap: () => _goToTab(1),
-        onNavigateToPlans: () => _goToTab(2),
-      ),
-      MapScreen(onNavigateToPlans: () => _goToTab(2)),
-      const PlansScreen(),
-      const ProfileScreen(),
-    ];
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final navigationState = context.watch<NavigationState>();
+
     return Scaffold(
-      body: IndexedStack(index: _currentTabIndex, children: _tabScreens),
+      body: IndexedStack(
+        index: navigationState.currentTabIndex,
+        children: [
+          HomeScreen(
+            onNavigateToMap: () => navigationState.goToMap(),
+            onNavigateToPlans: () => navigationState.goToPlans(),
+          ),
+          MapScreen(onNavigateToPlans: () => navigationState.goToPlans()),
+          const PlansScreen(),
+          const ProfileScreen(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentTabIndex,
-        onTap: _goToTab,
+        currentIndex: navigationState.currentTabIndex,
+        onTap: navigationState.setTab,
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
