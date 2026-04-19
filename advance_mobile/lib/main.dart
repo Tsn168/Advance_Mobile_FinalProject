@@ -19,7 +19,7 @@ import 'services/firebase_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseService.initialize();
-  setupServiceLocator();
+  await setupServiceLocator();
   runApp(const MyApp());
 }
 
