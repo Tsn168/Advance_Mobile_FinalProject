@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/repositories/pass/pass_repository.dart';
 import 'data/repositories/station/station_repository.dart';
@@ -17,15 +18,22 @@ import 'ui/screens/map/view_model/bike_viewmodel.dart';
 import 'ui/screens/home/view_model/booking_viewmodel.dart';
 import 'ui/states/app_state.dart';
 import 'ui/states/navigation_state.dart';
+import 'services/local_storage_service.dart';
 
 final getIt = GetIt.instance;
 
 /// Set up Dependency Injection
 /// Call this in main.dart before runApp()
-void setupServiceLocator() {
+Future<void> setupServiceLocator() async {
   if (getIt.isRegistered<MockDataStore>()) {
     return;
   }
+
+  // Local Storage Service (Async initialization)
+  final sharedPrefs = await SharedPreferences.getInstance();
+  getIt.registerSingleton<LocalStorageService>(
+    LocalStorageService(sharedPrefs),
+  );
 
   // Shared mock store
   getIt.registerSingleton<MockDataStore>(MockDataStore());
