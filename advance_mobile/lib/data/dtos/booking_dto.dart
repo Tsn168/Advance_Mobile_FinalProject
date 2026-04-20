@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../model/booking/booking.dart';
 
 /// Booking DTO - Data Transfer Object for Booking
@@ -73,21 +75,14 @@ class BookingDTO {
       bikeId: map['bikeId'] ?? '',
       stationId: map['stationId'] ?? '',
       slotNumber: map['slotNumber'] ?? 0,
-      bookingDate: map['bookingDate'] is DateTime
-          ? map['bookingDate']
-          : DateTime.parse(map['bookingDate'] ?? DateTime.now().toString()),
-      pickupDate: map['pickupDate'] is DateTime
-          ? map['pickupDate']
-          : map['pickupDate'] != null
-          ? DateTime.parse(map['pickupDate'])
-          : null,
-      returnDate: map['returnDate'] is DateTime
-          ? map['returnDate']
-          : map['returnDate'] != null
-          ? DateTime.parse(map['returnDate'])
-          : null,
+      bookingDate:
+          _parseDateTime(map['bookingDate'])?.toUtc() ?? DateTime.now().toUtc(),
+      pickupDate: _parseDateTime(map['pickupDate'])?.toUtc(),
+      returnDate: _parseDateTime(map['returnDate'])?.toUtc(),
       status: map['status'] ?? 'ACTIVE',
-      rideDistance: (map['rideDistance'] ?? 0.0).toDouble(),
+      rideDistance: map['rideDistance'] == null
+          ? null
+          : (map['rideDistance'] as num).toDouble(),
       rideDuration: map['rideDuration'],
     );
   }
@@ -100,12 +95,28 @@ class BookingDTO {
       'bikeId': bikeId,
       'stationId': stationId,
       'slotNumber': slotNumber,
-      'bookingDate': bookingDate.toIso8601String(),
-      'pickupDate': pickupDate?.toIso8601String(),
-      'returnDate': returnDate?.toIso8601String(),
+      'bookingDate': bookingDate.toUtc().toIso8601String(),
+      'pickupDate': pickupDate?.toUtc().toIso8601String(),
+      'returnDate': returnDate?.toUtc().toIso8601String(),
       'status': status,
       'rideDistance': rideDistance,
       'rideDuration': rideDuration,
     };
+  }
+
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    if (value is DateTime) {
+      return value;
+    }
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 }

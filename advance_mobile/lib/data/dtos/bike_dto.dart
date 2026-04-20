@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../model/bike/bike.dart';
 
 /// Bike DTO - Data Transfer Object for Bike
@@ -75,16 +77,8 @@ class BikeDTO {
       model: map['model'] ?? '',
       color: map['color'],
       kmsRidden: map['kmsRidden'],
-      lastServiced: map['lastServiced'] is DateTime
-          ? map['lastServiced']
-          : map['lastServiced'] != null
-          ? DateTime.parse(map['lastServiced'])
-          : null,
-      createdAt: map['createdAt'] is DateTime
-          ? map['createdAt']
-          : map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'])
-          : null,
+      lastServiced: _parseDateTime(map['lastServiced'])?.toUtc(),
+      createdAt: _parseDateTime(map['createdAt'])?.toUtc(),
     );
   }
 
@@ -99,8 +93,24 @@ class BikeDTO {
       'model': model,
       'color': color,
       'kmsRidden': kmsRidden,
-      'lastServiced': lastServiced?.toIso8601String(),
-      'createdAt': createdAt?.toIso8601String(),
+      'lastServiced': lastServiced?.toUtc().toIso8601String(),
+      'createdAt': createdAt?.toUtc().toIso8601String(),
     };
+  }
+
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    if (value is DateTime) {
+      return value;
+    }
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 }

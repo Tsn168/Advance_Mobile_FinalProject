@@ -10,6 +10,20 @@ class FirebaseConfig {
   static const String bikesCollection = 'bikes';
   static const String bookingsCollection = 'bookings';
 
+  // Root paths in Realtime Database
+  static const String usersPath = 'users';
+  static const String passesPath = 'passes';
+  static const String stationsPath = 'stations';
+  static const String bikesPath = 'bikes';
+  static const String bookingsPath = 'bookings';
+
+  // Realtime Database URL (from --dart-define or default project URL)
+  static const String realtimeDatabaseUrl = String.fromEnvironment(
+    'FIREBASE_DATABASE_URL',
+    defaultValue:
+        'https://project-velo-t2y3-default-rtdb.asia-southeast1.firebasedatabase.app/',
+  );
+
   // Request timeout
   static const Duration defaultTimeout = Duration(seconds: 10);
 

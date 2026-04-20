@@ -7,6 +7,7 @@ import '../config/firebase_config.dart';
 /// Call [FirebaseService.initialize()] once in main.dart before runApp().
 class FirebaseService {
   static bool _initialized = false;
+  static bool _canUseFirebaseRepositories = false;
 
   /// Initialize Firebase — must be called before using any Firebase feature
   static Future<void> initialize() async {
@@ -16,6 +17,7 @@ class FirebaseService {
 
     if (Firebase.apps.isNotEmpty) {
       _initialized = true;
+      _canUseFirebaseRepositories = true;
       return;
     }
 
@@ -26,18 +28,26 @@ class FirebaseService {
           'Skipping Firebase initialization and running with local/mock services.',
         );
         _initialized = true;
+        _canUseFirebaseRepositories = false;
         return;
       }
 
       await Firebase.initializeApp(options: FirebaseConfig.webOptions);
       _initialized = true;
+      _canUseFirebaseRepositories = true;
       return;
     }
 
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: FirebaseConfig.hasWebOptions ? FirebaseConfig.webOptions : null,
+    );
     _initialized = true;
+    _canUseFirebaseRepositories = true;
   }
 
   /// Check if Firebase has been initialized
   static bool get isInitialized => _initialized;
+
+  /// True when repositories should use Firebase backend.
+  static bool get canUseFirebaseRepositories => _canUseFirebaseRepositories;
 }

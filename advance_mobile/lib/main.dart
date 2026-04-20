@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'config/app_env.dart';
 import 'service_locator.dart';
+import 'services/firebase_service.dart';
 import 'services/google_maps_js_loader.dart';
 import 'ui/theme/app_theme.dart';
 import 'ui/screens/home/view_model/booking_viewmodel.dart';
@@ -20,9 +21,8 @@ import 'ui/screens/profile/profile_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppEnv.load();
+  await FirebaseService.initialize();
   await ensureGoogleMapsJsLoaded(apiKey: AppEnv.googleMapsApiKey);
-  // TODO: Firebase initialization will be handled by ELITE team
-  // await FirebaseService.initialize();
   await setupServiceLocator();
   runApp(const MyApp());
 }

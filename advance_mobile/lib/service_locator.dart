@@ -1,16 +1,22 @@
 import 'package:get_it/get_it.dart';
 
 import 'data/repositories/bike/bike_repository.dart';
+import 'data/repositories/bike/bike_repository_firebase.dart';
 import 'data/repositories/bike/bike_repository_mock.dart';
 import 'data/repositories/booking/booking_repository.dart';
+import 'data/repositories/booking/booking_repository_firebase.dart';
 import 'data/repositories/booking/booking_repository_mock.dart';
 import 'data/repositories/mock_data_store.dart';
 import 'data/repositories/pass/pass_repository.dart';
+import 'data/repositories/pass/pass_repository_firebase.dart';
 import 'data/repositories/pass/pass_repository_mock.dart';
 import 'data/repositories/station/station_repository.dart';
+import 'data/repositories/station/station_repository_firebase.dart';
 import 'data/repositories/station/station_repository_mock.dart';
 import 'data/repositories/user/user_repository.dart';
+import 'data/repositories/user/user_repository_firebase.dart';
 import 'data/repositories/user/user_repository_mock.dart';
+import 'services/firebase_service.dart';
 import 'ui/screens/home/view_model/booking_viewmodel.dart';
 import 'ui/screens/map/view_model/bike_viewmodel.dart';
 import 'ui/screens/map/view_model/map_viewmodel.dart';
@@ -28,31 +34,43 @@ Future<void> setupServiceLocator() async {
     return;
   }
 
+  final useFirebaseRepositories = FirebaseService.canUseFirebaseRepositories;
+
   getIt.registerLazySingleton<MockDataStore>(() => MockDataStore());
   getIt.registerLazySingleton<AppState>(() => AppState());
   getIt.registerLazySingleton<NavigationState>(() => NavigationState());
 
-  // Register Mock Repositories (for development/testing)
-  // Replace with Firebase repositories when backend is ready
-  getIt.registerLazySingleton<IPassRepository>(
-    () => MockPassRepository(getIt<MockDataStore>()),
-  );
+  if (useFirebaseRepositories) {
+    getIt.registerLazySingleton<IPassRepository>(() => PassRepositoryFirebase());
+    getIt.registerLazySingleton<IStationRepository>(
+      () => StationRepositoryFirebase(),
+    );
+    getIt.registerLazySingleton<IBikeRepository>(() => BikeRepositoryFirebase());
+    getIt.registerLazySingleton<IBookingRepository>(
+      () => BookingRepositoryFirebase(),
+    );
+    getIt.registerLazySingleton<IUserRepository>(() => UserRepositoryFirebase());
+  } else {
+    getIt.registerLazySingleton<IPassRepository>(
+      () => MockPassRepository(getIt<MockDataStore>()),
+    );
 
-  getIt.registerLazySingleton<IStationRepository>(
-    () => MockStationRepository(getIt<MockDataStore>()),
-  );
+    getIt.registerLazySingleton<IStationRepository>(
+      () => MockStationRepository(getIt<MockDataStore>()),
+    );
 
-  getIt.registerLazySingleton<IBikeRepository>(
-    () => MockBikeRepository(getIt<MockDataStore>()),
-  );
+    getIt.registerLazySingleton<IBikeRepository>(
+      () => MockBikeRepository(getIt<MockDataStore>()),
+    );
 
-  getIt.registerLazySingleton<IBookingRepository>(
-    () => MockBookingRepository(getIt<MockDataStore>()),
-  );
+    getIt.registerLazySingleton<IBookingRepository>(
+      () => MockBookingRepository(getIt<MockDataStore>()),
+    );
 
-  getIt.registerLazySingleton<IUserRepository>(
-    () => MockUserRepository(getIt<MockDataStore>()),
-  );
+    getIt.registerLazySingleton<IUserRepository>(
+      () => MockUserRepository(getIt<MockDataStore>()),
+    );
+  }
 
   // Register ViewModels
   getIt.registerFactory<PassViewModel>(
