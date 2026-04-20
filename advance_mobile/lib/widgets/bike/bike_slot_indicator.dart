@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_dimensions.dart';
-import '../../theme/app_spacing.dart';
-import '../../theme/app_text_styles.dart';
+import '../../ui/theme/app_colors.dart';
+import '../../ui/theme/app_dimensions.dart';
+import '../../ui/theme/app_spacing.dart';
+import '../../ui/theme/app_text_styles.dart';
 
 class BikeSlotIndicator extends StatelessWidget {
   final int slotNumber;
