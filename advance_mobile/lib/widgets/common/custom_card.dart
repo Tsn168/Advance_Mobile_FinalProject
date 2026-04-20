@@ -11,7 +11,7 @@ class CustomCard extends StatelessWidget {
   final Border? border;
 
   const CustomCard({
-    Key? key,
+    super.key,
     required this.child,
     this.backgroundColor = Colors.white,
     this.elevation = 2.0,
@@ -19,7 +19,7 @@ class CustomCard extends StatelessWidget {
     this.padding = const EdgeInsets.all(AppSpacing.lg),
     this.onTap,
     this.border,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,7 @@ class CustomCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: elevation,
                 offset: Offset(0, elevation / 2),
               ),
