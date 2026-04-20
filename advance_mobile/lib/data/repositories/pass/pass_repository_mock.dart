@@ -89,8 +89,10 @@ class MockPassRepository implements IPassRepository {
 
   @override
   Future<bool> hasActivePass(String userId) async {
-    final activePass = await getActivePass(userId);
-    return activePass != null;
+    await _store.simulateNetworkDelay();
+    return _store.passes.any(
+      (pass) => pass.userId == userId && pass.isActive && !pass.isExpired,
+    );
   }
 
   @override
