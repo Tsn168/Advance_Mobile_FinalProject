@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
@@ -6,6 +7,7 @@ import '../../../model/bike/bike.dart';
 import '../../../model/station/station.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_text_styles.dart';
 import 'view_model/bike_viewmodel.dart';
 import '../home/view_model/booking_viewmodel.dart';
 import 'view_model/map_viewmodel.dart';
@@ -25,42 +27,104 @@ class _MapScreenState extends State<MapScreen> {
     return Consumer3<MapViewModel, BikeViewModel, BookingViewModel>(
       builder: (context, mapViewModel, bikeViewModel, bookingViewModel, _) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Find Stations'), centerTitle: true),
-          body: Column(
-            children: [
-              _buildMapPlaceholder(),
-              const SizedBox(height: AppSpacing.md),
-              Expanded(
-                child: _buildStationList(
-                  context,
-                  mapViewModel,
-                  bikeViewModel,
-                  bookingViewModel,
-                ),
+          appBar: AppBar(
+            title: const Text('Find Stations'),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                onPressed: mapViewModel.refreshStations,
+                icon: const Icon(Icons.refresh_rounded),
+                tooltip: 'Refresh stations',
               ),
             ],
+          ),
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: AppColors.backgroundGradient,
+            ),
+            child: Column(
+              children: [
+                _buildGoogleMap(mapViewModel),
+                const SizedBox(height: AppSpacing.md),
+                Expanded(
+                  child: _buildStationList(
+                    context,
+                    mapViewModel,
+                    bikeViewModel,
+                    bookingViewModel,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildMapPlaceholder() {
+  Widget _buildGoogleMap(MapViewModel mapViewModel) {
+    if (mapViewModel.stations.isEmpty) {
+      return _buildMapPlaceholder();
+    }
+
     return Container(
-      height: 150,
+      height: 220,
       margin: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.24)),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: const Center(
+      clipBehavior: Clip.antiAlias,
+      child: GoogleMap(
+        initialCameraPosition: mapViewModel.initialCameraPosition,
+        onMapCreated: mapViewModel.onMapCreated,
+        markers: mapViewModel.markers,
+        mapToolbarEnabled: false,
+        zoomControlsEnabled: false,
+        myLocationEnabled: false,
+        myLocationButtonEnabled: false,
+      ),
+    );
+  }
+
+  Widget _buildMapPlaceholder() {
+    return Container(
+      height: 168,
+      margin: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.map, size: 42, color: AppColors.primary),
-            SizedBox(height: AppSpacing.xs),
-            Text('Google Maps integration by Somnang'),
+            const Icon(Icons.map_rounded, size: 44, color: AppColors.white),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Live Station Overview',
+              style: AppTextStyles.h5.copyWith(color: AppColors.white),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Map will appear after stations load',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.white.withValues(alpha: 0.86),
+              ),
+            ),
           ],
         ),
       ),
@@ -101,10 +165,10 @@ class _MapScreenState extends State<MapScreen> {
         return Card(
           margin: const EdgeInsets.only(bottom: AppSpacing.md),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             side: BorderSide(
-              color: isSelected ? AppColors.primary : Colors.transparent,
-              width: 2,
+              color: isSelected ? AppColors.primary : AppColors.border,
+              width: isSelected ? 2 : 1,
             ),
           ),
           child: Padding(
@@ -119,19 +183,12 @@ class _MapScreenState extends State<MapScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            station.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          Text(station.name, style: AppTextStyles.h5),
                           const SizedBox(height: AppSpacing.xs),
                           Text(
                             station.address ?? 'No address',
-                            style: const TextStyle(
+                            style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.grey600,
-                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -178,7 +235,10 @@ class _MapScreenState extends State<MapScreen> {
                   const SizedBox(height: AppSpacing.sm),
                   const Text(
                     'Station bikes',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Wrap(
@@ -188,10 +248,16 @@ class _MapScreenState extends State<MapScreen> {
                       return Chip(
                         label: Text(
                           '#${bike.slotNumber} ${bike.status.displayName}',
+                          style: AppTextStyles.labelMedium,
                         ),
                         backgroundColor: bike.status == BikeStatus.available
                             ? AppColors.success.withValues(alpha: 0.18)
-                            : AppColors.grey200,
+                            : AppColors.surfaceVariant,
+                        side: BorderSide(
+                          color: bike.status == BikeStatus.available
+                              ? AppColors.success.withValues(alpha: 0.32)
+                              : AppColors.border,
+                        ),
                       );
                     }).toList(),
                   ),
@@ -219,7 +285,7 @@ class _MapScreenState extends State<MapScreen> {
         '${station.availableBikes} bikes',
         style: TextStyle(
           color: hasBikes ? AppColors.success : AppColors.error,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
           fontSize: 12,
         ),
       ),

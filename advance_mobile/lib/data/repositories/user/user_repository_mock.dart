@@ -1,4 +1,4 @@
-import '../../config/app_constants.dart';
+import '../../../config/app_constants.dart';
 import '../../../model/user/user.dart';
 import 'user_repository.dart';
 import '../mock_data_store.dart';

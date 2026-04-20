@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../../../config/app_constants.dart';
+import '../../../../config/app_constants.dart';
 import '../../../../model/booking/booking.dart';
 import '../../../../data/repositories/booking/booking_repository.dart';
 import '../../../../data/repositories/pass/pass_repository.dart';

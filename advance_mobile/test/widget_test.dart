@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:advance_mobile/main.dart';
 import 'package:advance_mobile/service_locator.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+
   testWidgets('App boots splash then shows bottom navigation', (
     WidgetTester tester,
   ) async {
-    setupServiceLocator();
+    SharedPreferences.setMockInitialValues({});
+    await setupServiceLocator();
 
     await tester.pumpWidget(const MyApp());
 
