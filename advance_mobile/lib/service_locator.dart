@@ -1,4 +1,4 @@
-import 'package:get_it/get_it.dart';
+omport 'package:get_it/get_it.dart';
 import 'repositories/base/pass_repository.dart';
 import 'repositories/base/station_repository.dart';
 import 'repositories/base/bike_repository.dart';
