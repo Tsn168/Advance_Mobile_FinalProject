@@ -12,25 +12,25 @@ class BikeSlotIndicator extends StatelessWidget {
   final VoidCallback onTap;
 
   const BikeSlotIndicator({
-    Key? key,
+    super.key,
     required this.slotNumber,
     required this.isOccupied,
     required this.onTap,
     this.isSelected = false,
     this.isMaintenanceMode = false,
-  }) : super(key: key);
+  });
 
   Color get backgroundColor {
     if (isSelected) {
       return AppColors.primary;
     }
     if (isMaintenanceMode) {
-      return AppColors.warning.withOpacity(0.2);
+      return AppColors.warning.withValues(alpha: 0.2);
     }
     if (isOccupied) {
-      return AppColors.error.withOpacity(0.2);
+      return AppColors.error.withValues(alpha: 0.2);
     }
-    return AppColors.success.withOpacity(0.2);
+    return AppColors.success.withValues(alpha: 0.2);
   }
 
   Color get borderColor {
@@ -68,7 +68,7 @@ class BikeSlotIndicator extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

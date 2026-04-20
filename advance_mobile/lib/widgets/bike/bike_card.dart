@@ -15,14 +15,14 @@ class BikeCard extends StatelessWidget {
   final double? batteryLevel;
 
   const BikeCard({
-    Key? key,
+    super.key,
     required this.slotNumber,
     required this.bikeModel,
     required this.condition,
     required this.isAvailable,
     required this.onBook,
     this.batteryLevel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +54,8 @@ class BikeCard extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isAvailable
-                      ? AppColors.success.withOpacity(0.2)
-                      : AppColors.error.withOpacity(0.2),
+                      ? AppColors.success.withValues(alpha: 0.2)
+                      : AppColors.error.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
