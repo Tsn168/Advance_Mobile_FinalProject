@@ -15,6 +15,7 @@ import 'ui/screens/home/view_model/booking_viewmodel.dart';
 import 'ui/screens/map/view_model/bike_viewmodel.dart';
 import 'ui/screens/map/view_model/map_viewmodel.dart';
 import 'ui/screens/plans/view_model/pass_viewmodel.dart';
+import 'ui/screens/station_detail/view_model/station_detail_view_model.dart';
 import 'ui/states/app_state.dart';
 import 'ui/states/navigation_state.dart';
 
@@ -64,6 +65,13 @@ Future<void> setupServiceLocator() async {
 
   getIt.registerFactory<BikeViewModel>(
     () => BikeViewModel(getIt<IBikeRepository>()),
+  );
+
+  getIt.registerFactory<StationDetailViewModel>(
+    () => StationDetailViewModel(
+      getIt<IBikeRepository>(),
+      getIt<IStationRepository>(),
+    ),
   );
 
   getIt.registerFactory<BookingViewModel>(
