@@ -123,6 +123,40 @@ flutter test
 - Connect real-time streams and atomic booking transactions
 - Update `service_locator.dart` to switch between mock and Firebase implementations
 
+## Realtime Database Setup (Project Velo)
+
+This project now supports Firebase **Realtime Database** repositories using:
+
+- Database URL: `https://project-velo-t2y3-default-rtdb.asia-southeast1.firebasedatabase.app/`
+- Seed structure file: `firebase/realtime_db_seed.json`
+
+### Run app with Realtime Database
+
+Ensure Firebase is initialized and available for your target platform.
+
+### Import the provided seed JSON into Realtime Database
+
+Use the helper script:
+
+```bash
+python3 scripts/import_realtime_seed.py \
+  --database-url "https://project-velo-t2y3-default-rtdb.asia-southeast1.firebasedatabase.app/" \
+  --seed-file "firebase/realtime_db_seed.json" \
+  --auth-token "<DATABASE_SECRET_OR_ID_TOKEN>"
+```
+
+If your database rules allow public write in development, `--auth-token` can be omitted.
+
+### Notes
+
+- Repository implementations now read/write from Realtime Database root paths:
+  - `users`
+  - `passes`
+  - `stations`
+  - `bikes`
+  - `bookings`
+- DTO mapping is aligned with ISO datetime strings used in your provided JSON structure.
+
 ### Somnang (UI/UX)
 - Create feature-specific widgets in `lib/ui/screens/*/widgets/`
 - Add shared widgets in `lib/ui/widgets/`

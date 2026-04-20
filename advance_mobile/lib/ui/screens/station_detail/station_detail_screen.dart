@@ -1,0 +1,256 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../../config/app_constants.dart';
+import '../../../model/bike/bike.dart';
+import '../../../model/station/station.dart';
+import '../../../service_locator.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../widgets/bike_slot_card.dart';
+import '../booking_confirmation/booking_confirmation_screen.dart';
+import '../home/view_model/booking_viewmodel.dart';
+import '../plans/view_model/pass_viewmodel.dart';
+import 'view_model/station_detail_view_model.dart';
+
+class StationDetailScreen extends StatefulWidget {
+  const StationDetailScreen({
+    super.key,
+    required this.stationId,
+  });
+
+  final String stationId;
+
+  @override
+  State<StationDetailScreen> createState() => _StationDetailScreenState();
+}
+
+class _StationDetailScreenState extends State<StationDetailScreen> {
+  late final StationDetailViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = getIt<StationDetailViewModel>();
+    _viewModel.loadStationDetails(widget.stationId);
+  }
+
+  @override
+  void dispose() {
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider<StationDetailViewModel>.value(
+      value: _viewModel,
+      child: Consumer<StationDetailViewModel>(
+        builder: (context, viewModel, _) {
+          return Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {},
+              ),
+              title: const Text(
+                'KINETIC',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              centerTitle: true,
+              actions: const [
+                Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Color(0xFFE3F2FD),
+                    child: Icon(Icons.person, size: 18, color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ),
+            body: Column(
+              children: [
+                const SizedBox(height: AppSpacing.md),
+                const Text(
+                  'View Available Bike',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF78909C),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Expanded(child: _buildBody(context, viewModel)),
+              ],
+            ),
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: 1,
+              type: BottomNavigationBarType.fixed,
+              onTap: (index) {
+                if (index == 1) {
+                  return;
+                }
+                Navigator.of(context).maybePop();
+              },
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.directions_bike),
+                  label: 'Bike',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.account_balance_wallet),
+                  label: 'Wallet',
+                ),
+                BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, StationDetailViewModel viewModel) {
+    if (viewModel.state == AppState.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (viewModel.state == AppState.error) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 40, color: AppColors.error),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                viewModel.errorMessage ?? 'Failed to load station details',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ElevatedButton.icon(
+                onPressed: () => viewModel.refreshBikes(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final station = viewModel.station;
+    if (station == null) {
+      return const Center(child: Text('Station not found'));
+    }
+
+    final listEntries = _buildSlotEntries(station, viewModel);
+    if (listEntries.isEmpty) {
+      return const Center(child: Text('No bike slots available'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: viewModel.refreshBikes,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: listEntries.length,
+        itemBuilder: (context, index) {
+          final entry = listEntries[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: BikeSlotCard(
+              bike: entry.bike,
+              slotNumber: entry.slotNumber,
+              onTap: entry.bike == null
+                  ? null
+                  : () => _onBikeTap(
+                      context,
+                      viewModel,
+                      station,
+                      entry.bike!,
+                    ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  List<_SlotEntry> _buildSlotEntries(
+    Station station,
+    StationDetailViewModel viewModel,
+  ) {
+    final entries = <_SlotEntry>[];
+
+    for (final bike in viewModel.availableBikes) {
+      entries.add(_SlotEntry(slotNumber: bike.slotNumber, bike: bike));
+    }
+
+    for (final bike in viewModel.unavailableBikes) {
+      entries.add(_SlotEntry(slotNumber: bike.slotNumber, bike: bike));
+    }
+
+    final usedSlots = viewModel.bikes.map((bike) => bike.slotNumber).toSet();
+    for (var slot = 1; slot <= station.totalSlots; slot++) {
+      if (!usedSlots.contains(slot)) {
+        entries.add(_SlotEntry(slotNumber: slot));
+      }
+    }
+
+    entries.sort((a, b) {
+      final bikeA = a.bike;
+      final bikeB = b.bike;
+
+      int rank(_SlotEntry e) {
+        if (e.bike == null) {
+          return 2;
+        }
+        return e.bike!.isAvailable ? 0 : 1;
+      }
+
+      final rankDiff = rank(a).compareTo(rank(b));
+      if (rankDiff != 0) {
+        return rankDiff;
+      }
+      return a.slotNumber.compareTo(b.slotNumber);
+    });
+
+    return entries;
+  }
+
+  void _onBikeTap(
+    BuildContext context,
+    StationDetailViewModel viewModel,
+    Station station,
+    Bike bike,
+  ) {
+    viewModel.selectBike(bike.id);
+
+    final bookingViewModel = context.read<BookingViewModel>();
+    final passViewModel = context.read<PassViewModel>();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MultiProvider(
+          providers: [
+            ChangeNotifierProvider<BookingViewModel>.value(
+              value: bookingViewModel,
+            ),
+            ChangeNotifierProvider<PassViewModel>.value(value: passViewModel),
+          ],
+          child: BookingConfirmationScreen(station: station, bike: bike),
+        ),
+      ),
+    );
+  }
+}
+
+class _SlotEntry {
+  const _SlotEntry({required this.slotNumber, this.bike});
+
+  final int slotNumber;
+  final Bike? bike;
+}

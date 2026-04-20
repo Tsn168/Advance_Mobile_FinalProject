@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../model/station/station.dart';
 
 /// Station DTO - Data Transfer Object for Station
@@ -65,11 +67,7 @@ class StationDTO {
       availableBikes: map['availableBikes'] ?? 0,
       address: map['address'],
       imageUrl: map['imageUrl'],
-      lastUpdated: map['lastUpdated'] is DateTime
-          ? map['lastUpdated']
-          : map['lastUpdated'] != null
-          ? DateTime.parse(map['lastUpdated'])
-          : null,
+      lastUpdated: _parseDateTime(map['lastUpdated'])?.toUtc(),
     );
   }
 
@@ -84,7 +82,23 @@ class StationDTO {
       'availableBikes': availableBikes,
       'address': address,
       'imageUrl': imageUrl,
-      'lastUpdated': lastUpdated?.toIso8601String(),
+      'lastUpdated': lastUpdated?.toUtc().toIso8601String(),
     };
+  }
+
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    if (value is DateTime) {
+      return value;
+    }
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 }

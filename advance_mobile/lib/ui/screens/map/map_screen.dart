@@ -10,6 +10,7 @@ import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
 import 'view_model/bike_viewmodel.dart';
 import '../home/view_model/booking_viewmodel.dart';
+import '../station_detail/station_detail_screen.dart';
 import 'view_model/map_viewmodel.dart';
 
 class MapScreen extends StatefulWidget {
@@ -205,6 +206,17 @@ class _MapScreenState extends State<MapScreen> {
                         onPressed: () async {
                           mapViewModel.selectStation(station.id);
                           await bikeViewModel.loadBikesByStation(station.id);
+
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  StationDetailScreen(stationId: station.id),
+                            ),
+                          );
                         },
                         icon: const Icon(Icons.list),
                         label: const Text('View Bikes'),
