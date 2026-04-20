@@ -46,3 +46,4 @@ app.*.map.json
 
 # Local AI/editor workspace metadata
 .kiro/
+advance_mobile/DESIGN.md

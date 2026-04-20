@@ -8,19 +8,39 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
-        brightness: Brightness.light,
+      colorScheme: const ColorScheme.light(
+        primary: AppColors.primary,
+        secondary: AppColors.accent,
+        surface: AppColors.surface,
+        error: AppColors.error,
+        onPrimary: AppColors.white,
+        onSecondary: AppColors.white,
+        onSurface: AppColors.textPrimary,
+      ),
+      textTheme: TextTheme(
+        headlineLarge: AppTextStyles.h1,
+        headlineMedium: AppTextStyles.h2,
+        headlineSmall: AppTextStyles.h3,
+        titleLarge: AppTextStyles.h4,
+        titleMedium: AppTextStyles.h5,
+        bodyLarge: AppTextStyles.bodyLarge,
+        bodyMedium: AppTextStyles.bodyMedium,
+        bodySmall: AppTextStyles.bodySmall,
+        labelLarge: AppTextStyles.labelLarge,
+        labelMedium: AppTextStyles.labelMedium,
+        labelSmall: AppTextStyles.labelSmall,
       ),
       scaffoldBackgroundColor: AppColors.background,
 
       // AppBar
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.white,
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: true,
-        titleTextStyle: AppTextStyles.h4.copyWith(color: AppColors.white),
+        titleTextStyle: AppTextStyles.h4.copyWith(color: AppColors.textPrimary),
       ),
 
       // Buttons
@@ -28,52 +48,58 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
+          disabledBackgroundColor: AppColors.grey300,
+          disabledForegroundColor: AppColors.grey600,
+          elevation: 0,
+          textStyle: AppTextStyles.buttonText,
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.md,
           ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
-              AppDimensions.buttonBorderRadius,
+              AppDimensions.borderRadiusMedium,
             ),
           ),
-          minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
+          minimumSize: const Size(0, AppDimensions.buttonHeight),
         ),
       ),
 
       // Outlined Button
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary),
+          foregroundColor: AppColors.primaryDark,
+          textStyle: AppTextStyles.buttonText,
+          side: const BorderSide(color: AppColors.border),
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
-              AppDimensions.buttonBorderRadius,
+              AppDimensions.borderRadiusMedium,
             ),
           ),
-          minimumSize: const Size(double.infinity, AppDimensions.buttonHeight),
+          minimumSize: const Size(0, AppDimensions.buttonHeight),
         ),
       ),
 
       // Input Fields
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.white,
+        fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.inputBorderRadius),
-          borderSide: const BorderSide(color: AppColors.grey300),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.inputBorderRadius),
-          borderSide: const BorderSide(color: AppColors.grey300),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.inputBorderRadius),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.primaryDark, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.inputBorderRadius),
@@ -85,17 +111,20 @@ class AppTheme {
       // Card Theme
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: AppDimensions.cardElevation,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
+          side: const BorderSide(color: AppColors.border),
         ),
-        margin: const EdgeInsets.all(AppSpacing.sm),
+        margin: EdgeInsets.zero,
       ),
 
       // Dialog Theme
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
-        elevation: 8,
+        surfaceTintColor: Colors.transparent,
+        elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.dialogBorderRadius),
         ),
@@ -117,7 +146,7 @@ class AppTheme {
 
       // Floating Action Button Theme
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primaryDark,
         foregroundColor: AppColors.white,
         elevation: 4,
         shape: RoundedRectangleBorder(
@@ -128,7 +157,7 @@ class AppTheme {
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceVariant,
-        selectedColor: AppColors.primary,
+        selectedColor: AppColors.primaryLight,
         side: const BorderSide(color: AppColors.border),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
@@ -151,21 +180,24 @@ class AppTheme {
 
       // Bottom Navigation Bar Theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: AppColors.white,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.grey500,
-        elevation: 8,
+        backgroundColor: AppColors.surface,
+        selectedItemColor: AppColors.primaryDark,
+        unselectedItemColor: AppColors.grey600,
+        elevation: 2,
         type: BottomNavigationBarType.fixed,
+        showUnselectedLabels: true,
+        selectedIconTheme: const IconThemeData(size: 24),
+        unselectedIconTheme: const IconThemeData(size: 22),
         selectedLabelStyle: AppTextStyles.labelSmall,
         unselectedLabelStyle: AppTextStyles.labelSmall,
       ),
 
       // Tab Bar Theme
       tabBarTheme: TabBarThemeData(
-        labelColor: AppColors.primary,
+        labelColor: AppColors.primaryDark,
         unselectedLabelColor: AppColors.textSecondary,
         indicator: UnderlineTabIndicator(
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: const BorderSide(color: AppColors.primaryDark, width: 2),
         ),
         labelStyle: AppTextStyles.labelLarge,
         unselectedLabelStyle: AppTextStyles.labelMedium,
@@ -173,11 +205,12 @@ class AppTheme {
 
       // Snackbar Theme
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.textPrimary,
+        backgroundColor: AppColors.grey900,
+        behavior: SnackBarBehavior.floating,
         contentTextStyle: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.white,
         ),
-        elevation: 8,
+        elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
         ),

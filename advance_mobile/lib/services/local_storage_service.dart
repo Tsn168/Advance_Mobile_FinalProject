@@ -9,8 +9,6 @@ class LocalStorageService {
   final SharedPreferences _prefs;
 
   // Keys
-  static const String _userPrefsKey = 'user_preferences';
-  static const String _stationsCacheKey = 'stations_cache';
   static const String _lastSyncKey = 'last_sync_timestamp';
 
   /// Save a simple string value
