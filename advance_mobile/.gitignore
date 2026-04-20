@@ -47,3 +47,8 @@ app.*.map.json
 # Local AI/editor workspace metadata
 .kiro/
 advance_mobile/DESIGN.md
+
+# Local environment secrets
+.env
+.env.*
+!.env.example
