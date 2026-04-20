@@ -16,7 +16,7 @@ class CustomButton extends StatelessWidget {
   final bool isLoading;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.label,
     this.onPressed,
     this.isEnabled = true,
@@ -28,7 +28,7 @@ class CustomButton extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
     this.borderRadius = 12.0,
     this.isLoading = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class CustomButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: isEnabled
                   ? backgroundColor
-                  : backgroundColor.withOpacity(0.5),
+                  : backgroundColor.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(borderRadius),
             ),
             child: Center(

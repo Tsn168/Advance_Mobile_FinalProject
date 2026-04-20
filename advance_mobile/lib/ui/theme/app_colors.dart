@@ -17,12 +17,14 @@ class AppColors {
   static const Color grey600 = Color(0xFF757575);
   static const Color grey700 = Color(0xFF616161);
   static const Color grey800 = Color(0xFF424242);
+  static const Color grey900 = Color(0xFF212121);
 
   // Status Colors
   static const Color success = Color(0xFF4CAF50);
   static const Color warning = Color(0xFFFFC107);
   static const Color error = Color(0xFFF44336);
   static const Color info = Color(0xFF2196F3);
+  static const Color accent = Color(0xFFFF9800);
 
   // Semantic
   static const Color disabled = grey400;
@@ -50,5 +52,11 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [Color(0xFFFF6B6B), Color(0xFFFF5252)],
+  );
+
+  static const LinearGradient backgroundGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFF9FBFF), Color(0xFFF2F6FF)],
   );
 }

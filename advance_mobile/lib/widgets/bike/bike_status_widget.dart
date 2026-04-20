@@ -16,14 +16,14 @@ class BikeStatusWidget extends StatelessWidget {
   final bool showDetails;
 
   const BikeStatusWidget({
-    Key? key,
+    super.key,
     required this.bikeId,
     required this.status,
     this.lastMaintenanceDate,
     this.nextMaintenanceDate,
     this.batteryLevel,
     this.showDetails = true,
-  }) : super(key: key);
+  });
 
   Color get statusColor {
     switch (status) {
@@ -39,7 +39,7 @@ class BikeStatusWidget extends StatelessWidget {
   }
 
   Color get backgroundColor {
-    return statusColor.withOpacity(0.1);
+    return statusColor.withValues(alpha: 0.1);
   }
 
   IconData get statusIcon {
@@ -109,7 +109,7 @@ class BikeStatusWidget extends StatelessWidget {
                 height: 50,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: statusColor.withOpacity(0.2),
+                  color: statusColor.withValues(alpha: 0.2),
                 ),
                 child: Icon(
                   statusIcon,

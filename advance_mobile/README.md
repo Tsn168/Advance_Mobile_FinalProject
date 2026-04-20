@@ -93,10 +93,13 @@ This behavior is validated by unit tests in
 ## Run Locally
 
 ```bash
+cp .env.example .env
+# add GOOGLE_MAPS_API_KEY in .env
+
 flutter pub get
 flutter analyze
 flutter test
-flutter run
+./scripts/flutter_run_with_env.sh -d chrome
 ```
 
 ## Key Files

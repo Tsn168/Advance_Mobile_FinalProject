@@ -1,11 +1,29 @@
 import 'package:flutter/material.dart';
-import 'views/splash/prelaunch_splash_screen.dart';
-import 'views/tabs/home_tab.dart';
-import 'views/tabs/map_tab.dart';
-import 'views/tabs/plans_tab.dart';
-import 'views/tabs/profile_tab.dart';
+import 'package:provider/provider.dart';
 
-void main() {
+import 'config/app_env.dart';
+import 'service_locator.dart';
+import 'services/google_maps_js_loader.dart';
+import 'ui/theme/app_theme.dart';
+import 'ui/screens/home/view_model/booking_viewmodel.dart';
+import 'ui/screens/map/view_model/bike_viewmodel.dart';
+import 'ui/screens/map/view_model/map_viewmodel.dart';
+import 'ui/screens/plans/view_model/pass_viewmodel.dart';
+import 'ui/states/app_state.dart';
+import 'ui/states/navigation_state.dart';
+import 'ui/screens/splash/prelaunch_splash_screen.dart';
+import 'ui/screens/home/home_screen.dart';
+import 'ui/screens/map/map_screen.dart';
+import 'ui/screens/plans/plans_screen.dart';
+import 'ui/screens/profile/profile_screen.dart';
+import 'services/firebase_service.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppEnv.load();
+  await ensureGoogleMapsJsLoaded(apiKey: AppEnv.googleMapsApiKey);
+  await FirebaseService.initialize();
+  await setupServiceLocator();
   runApp(const MyApp());
 }
 

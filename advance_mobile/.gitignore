@@ -52,3 +52,4 @@ advance_mobile/DESIGN.md
 .env
 .env.*
 !.env.example
+ios/Flutter/LocalSecrets.xcconfig

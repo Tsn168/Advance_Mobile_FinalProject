@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../../../config/app_constants.dart';
+import '../../../../config/app_constants.dart';
 import '../../../../model/bike/bike.dart';
 import '../../../../data/repositories/bike/bike_repository.dart';
 

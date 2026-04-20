@@ -19,7 +19,7 @@ class SubscriptionCard extends StatelessWidget {
   final bool isPopular;
 
   const SubscriptionCard({
-    Key? key,
+    super.key,
     required this.passType,
     required this.price,
     required this.originalPrice,
@@ -28,7 +28,7 @@ class SubscriptionCard extends StatelessWidget {
     required this.onChoose,
     this.isActive = false,
     this.isPopular = false,
-  }) : super(key: key);
+  });
 
   String get passTitle {
     switch (passType) {

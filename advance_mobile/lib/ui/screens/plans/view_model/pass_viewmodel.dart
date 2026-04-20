@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../config/app_constants.dart';
+import '../../../../config/app_constants.dart';
 import '../../../../model/pass/pass.dart';
 import '../../../../data/repositories/pass/pass_repository.dart';
 import '../../../../data/repositories/user/user_repository.dart';
