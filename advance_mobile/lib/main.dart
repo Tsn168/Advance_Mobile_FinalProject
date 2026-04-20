@@ -16,13 +16,13 @@ import 'ui/screens/home/home_screen.dart';
 import 'ui/screens/map/map_screen.dart';
 import 'ui/screens/plans/plans_screen.dart';
 import 'ui/screens/profile/profile_screen.dart';
-import 'services/firebase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppEnv.load();
   await ensureGoogleMapsJsLoaded(apiKey: AppEnv.googleMapsApiKey);
-  await FirebaseService.initialize();
+  // TODO: Firebase initialization will be handled by ELITE team
+  // await FirebaseService.initialize();
   await setupServiceLocator();
   runApp(const MyApp());
 }
