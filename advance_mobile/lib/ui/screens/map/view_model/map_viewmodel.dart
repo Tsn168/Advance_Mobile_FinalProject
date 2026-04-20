@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../../../../config/app_constants.dart';
+import '../../../config/app_constants.dart';
 import '../../../../model/station/station.dart';
 import '../../../../data/repositories/station/station_repository.dart';
-import '../../../../services/error_handler.dart';
 
 class MapViewModel extends ChangeNotifier {
   MapViewModel(this._stationRepository);
@@ -52,13 +51,13 @@ class MapViewModel extends ChangeNotifier {
         },
         onError: (Object error) {
           _state = AppState.error;
-          _errorMessage = ErrorHandlerService.handleError(error);
+          _errorMessage = ErrorHandler.handleError(error);
           notifyListeners();
         },
       );
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandlerService.handleError(error);
+      _errorMessage = ErrorHandler.handleError(error);
       notifyListeners();
     }
   }

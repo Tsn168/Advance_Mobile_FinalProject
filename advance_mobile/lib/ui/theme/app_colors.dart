@@ -1,64 +1,54 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Brand Colors
-  static const Color primary = Color(0xFF0F766E);
-  static const Color primaryDark = Color(0xFF115E59);
-  static const Color primaryLight = Color(0xFF2DD4BF);
-  static const Color accent = Color(0xFFF59E0B);
+  // Primary Blue Colors
+  static const Color primary = Color(0xFF2196F3); // Main blue
+  static const Color primaryDark = Color(0xFF1976D2); // Darker blue
+  static const Color primaryLight = Color(0xFF64B5F6); // Lighter blue
 
   // Neutral Colors
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
-  static const Color grey100 = Color(0xFFF8FAFC);
-  static const Color grey200 = Color(0xFFF1F5F9);
-  static const Color grey300 = Color(0xFFE2E8F0);
-  static const Color grey400 = Color(0xFFCBD5E1);
-  static const Color grey500 = Color(0xFF94A3B8);
-  static const Color grey600 = Color(0xFF64748B);
-  static const Color grey700 = Color(0xFF475569);
-  static const Color grey800 = Color(0xFF334155);
-  static const Color grey900 = Color(0xFF1E293B);
+  static const Color grey100 = Color(0xFFF5F5F5);
+  static const Color grey200 = Color(0xFFEEEEEE);
+  static const Color grey300 = Color(0xFFE0E0E0);
+  static const Color grey400 = Color(0xFFBDBDBD);
+  static const Color grey500 = Color(0xFF9E9E9E);
+  static const Color grey600 = Color(0xFF757575);
+  static const Color grey700 = Color(0xFF616161);
+  static const Color grey800 = Color(0xFF424242);
 
   // Status Colors
-  static const Color success = Color(0xFF16A34A);
-  static const Color warning = Color(0xFFD97706);
-  static const Color error = Color(0xFFDC2626);
-  static const Color info = Color(0xFF0284C7);
+  static const Color success = Color(0xFF4CAF50);
+  static const Color warning = Color(0xFFFFC107);
+  static const Color error = Color(0xFFF44336);
+  static const Color info = Color(0xFF2196F3);
 
   // Semantic
   static const Color disabled = grey400;
-  static const Color divider = Color(0xFFD7E6E3);
-  static const Color background = Color(0xFFF4F8F7);
+  static const Color divider = grey300;
+  static const Color background = grey100;
   static const Color surface = white;
-  static const Color surfaceVariant = Color(0xFFE6F2F0);
-  static const Color border = Color(0xFFD7E6E3);
-  static const Color textPrimary = grey900;
+  static const Color surfaceVariant = grey200;
+  static const Color border = grey300;
+  static const Color textPrimary = grey800;
   static const Color textSecondary = grey600;
-  static const Color shadow = Color(0x220F172A);
 
   // Specific Feature Colors
-  static const Color availableBike = success;
-  static const Color bookedBike = error;
-  static const Color maintenanceBike = warning;
-  static const Color stationMarker = primary;
-  static const Color selectedStation = primaryDark;
-
+  static const Color availableBike = Color(0xFF4CAF50);
+  static const Color bookedBike = Color(0xFFF44336);
+  static const Color maintenanceBike = Color(0xFFFFC107);
+  static const Color stationMarker = Color(0xFF2196F3);
+  static const Color selectedStation = Color(0xFF1976D2);
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [primaryDark, primaryLight],
+    colors: [Color(0xFF6C63FF), Color(0xFF5A52D5)],
   );
 
   static const LinearGradient secondaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFF59E0B), Color(0xFFFB7185)],
-  );
-
-  static const LinearGradient backgroundGradient = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [Color(0xFFF7FBFA), Color(0xFFEFF6F5)],
+    colors: [Color(0xFFFF6B6B), Color(0xFFFF5252)],
   );
 }

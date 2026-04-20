@@ -103,9 +103,7 @@ class SubscriptionCard extends StatelessWidget {
                       topRight: Radius.circular(AppDimensions.cardBorderRadius),
                     ),
                   ),
-                  child: const Center(
-                    child: Icon(Icons.image_not_supported),
-                  ),
+                  child: const Center(child: Icon(Icons.image_not_supported)),
                 ),
               // Badge
               Positioned(
@@ -142,9 +140,7 @@ class SubscriptionCard extends StatelessWidget {
                 // Pass Title
                 Text(
                   passTitle,
-                  style: AppTextStyles.h5.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.h5.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: AppSpacing.sm),
 
