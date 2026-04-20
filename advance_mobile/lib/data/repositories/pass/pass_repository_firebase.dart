@@ -12,21 +12,6 @@ class PassRepositoryFirebase implements IPassRepository {
       _firestore.collection(FirebaseConfig.passesCollection);
 
   @override
-  Future<List<Pass>> getAllAvailablePasses() async {
-    // In a real app, you might fetch these from a 'pass_types' collection.
-    // For this project, we return the enum values.
-    return PassType.values.map((type) => Pass(
-      id: type.name,
-      userId: '',
-      type: type,
-      startDate: DateTime.now(),
-      expiryDate: DateTime.now().add(Duration(days: type.durationDays)),
-      isActive: true,
-      price: type.price,
-    )).toList();
-  }
-
-  @override
   Future<List<Pass>> getPassesByUserId(String userId) async {
     final snapshot = await _passesCollection
         .where('userId', isEqualTo: userId)
@@ -54,11 +39,20 @@ class PassRepositoryFirebase implements IPassRepository {
   }
 
   @override
+  Future<Pass?> getPassById(String passId) async {
+    final doc = await _passesCollection.doc(passId).get();
+    if (!doc.exists) return null;
+
+    final data = doc.data() as Map<String, dynamic>;
+    return PassDTO.fromFirebase(data).toModel();
+  }
+
+  @override
   Future<Pass> createPass(Pass pass) async {
     final docRef = _passesCollection.doc();
     final passWithId = pass.copyWith(id: docRef.id);
     final dto = PassDTO.fromModel(passWithId);
-    
+
     await docRef.set(dto.toFirebase());
     return passWithId;
   }
@@ -67,6 +61,42 @@ class PassRepositoryFirebase implements IPassRepository {
   Future<void> updatePass(Pass pass) async {
     final dto = PassDTO.fromModel(pass);
     await _passesCollection.doc(pass.id).update(dto.toFirebase());
+  }
+
+  @override
+  Future<void> deletePass(String passId) async {
+    await _passesCollection.doc(passId).delete();
+  }
+
+  @override
+  Future<List<Pass>> getAllAvailablePasses() async {
+    return PassType.values
+        .map(
+          (type) => Pass(
+            id: type.name,
+            userId: '',
+            type: type,
+            startDate: DateTime.now(),
+            expiryDate: DateTime.now().add(Duration(days: type.durationDays)),
+            isActive: true,
+            price: type.price,
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Stream<Pass?> watchActivePass(String userId) {
+    return _passesCollection
+        .where('userId', isEqualTo: userId)
+        .where('isActive', isEqualTo: true)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+      if (snapshot.docs.isEmpty) return null;
+      final data = snapshot.docs.first.data() as Map<String, dynamic>;
+      return PassDTO.fromFirebase(data).toModel();
+    });
   }
 
   @override
