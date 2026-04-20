@@ -104,10 +104,13 @@ class MockBikeRepository implements IBikeRepository {
   }
 
   @override
-  Stream<List<Bike>> watchBikesByStation(String stationId) async* {
-    yield await getBikesByStation(stationId);
-    await for (final _ in _store.changes) {
-      yield await getBikesByStation(stationId);
-    }
+  Stream<List<Bike>> watchBikesByStation(String stationId) {
+    return Stream<List<Bike>>.periodic(const Duration(seconds: 1), (_) {
+      final bikes = _store.bikes
+          .where((bike) => bike.stationId == stationId)
+          .toList();
+      bikes.sort((a, b) => a.slotNumber.compareTo(b.slotNumber));
+      return bikes;
+    });
   }
 }

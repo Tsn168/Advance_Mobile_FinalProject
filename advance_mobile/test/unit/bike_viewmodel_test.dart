@@ -39,7 +39,7 @@ void main() {
 
       final initialAvailable = viewModel.availableBikes.length;
       await bikeRepository.updateBikeStatus('bike_c1', BikeStatus.booked);
-      await Future<void>.delayed(const Duration(milliseconds: 350));
+      await Future<void>.delayed(const Duration(milliseconds: 1300));
 
       expect(viewModel.availableBikes.length, lessThan(initialAvailable));
     });

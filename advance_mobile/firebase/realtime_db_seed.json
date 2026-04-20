@@ -1,0 +1,217 @@
+{
+  "users": {
+    "user_reyu": {
+      "id": "user_reyu",
+      "email": "reyu@bikeshare.com",
+      "name": "Reyu",
+      "phoneNumber": null,
+      "profileImageUrl": null,
+      "activePassId": "pass_monthly_reyu",
+      "createdAt": "2025-10-22T08:00:00Z",
+      "updatedAt": null
+    },
+    "user_elite": {
+      "id": "user_elite",
+      "email": "elite@bikeshare.com",
+      "name": "Elite",
+      "phoneNumber": null,
+      "profileImageUrl": null,
+      "activePassId": null,
+      "createdAt": "2025-12-21T08:00:00Z",
+      "updatedAt": null
+    },
+    "user_somnang": {
+      "id": "user_somnang",
+      "email": "somnang@bikeshare.com",
+      "name": "Somnang",
+      "phoneNumber": null,
+      "profileImageUrl": null,
+      "activePassId": null,
+      "createdAt": "2025-11-21T08:00:00Z",
+      "updatedAt": null
+    }
+  },
+  "passes": {
+    "pass_monthly_reyu": {
+      "id": "pass_monthly_reyu",
+      "userId": "user_reyu",
+      "type": "MONTHLY",
+      "startDate": "2026-04-17T08:00:00Z",
+      "expiryDate": "2026-05-17T08:00:00Z",
+      "isActive": true,
+      "price": 49.99,
+      "ridesUsed": 12,
+      "createdAt": "2026-04-17T08:00:00Z"
+    },
+    "pass_old_somnang": {
+      "id": "pass_old_somnang",
+      "userId": "user_somnang",
+      "type": "DAY",
+      "startDate": "2026-03-16T08:00:00Z",
+      "expiryDate": "2026-03-17T08:00:00Z",
+      "isActive": false,
+      "price": 5.99,
+      "ridesUsed": 2,
+      "createdAt": "2026-03-16T08:00:00Z"
+    }
+  },
+  "stations": {
+    "station_central": {
+      "id": "station_central",
+      "name": "Central Station",
+      "latitude": 11.5564,
+      "longitude": 104.9282,
+      "totalSlots": 20,
+      "availableBikes": 2,
+      "address": "Central District",
+      "imageUrl": null,
+      "lastUpdated": "2026-04-20T08:00:00Z"
+    },
+    "station_downtown": {
+      "id": "station_downtown",
+      "name": "Downtown Hub",
+      "latitude": 11.5625,
+      "longitude": 104.916,
+      "totalSlots": 15,
+      "availableBikes": 1,
+      "address": "Downtown Avenue",
+      "imageUrl": null,
+      "lastUpdated": "2026-04-20T08:00:00Z"
+    },
+    "station_park": {
+      "id": "station_park",
+      "name": "Park Station",
+      "latitude": 11.545,
+      "longitude": 104.94,
+      "totalSlots": 18,
+      "availableBikes": 1,
+      "address": "City Park",
+      "imageUrl": null,
+      "lastUpdated": "2026-04-20T08:00:00Z"
+    },
+    "station_terminal": {
+      "id": "station_terminal",
+      "name": "Terminal Station",
+      "latitude": 11.57,
+      "longitude": 104.901,
+      "totalSlots": 22,
+      "availableBikes": 2,
+      "address": "Transit Terminal",
+      "imageUrl": null,
+      "lastUpdated": "2026-04-20T08:00:00Z"
+    }
+  },
+  "bikes": {
+    "bike_c1": {
+      "id": "bike_c1",
+      "stationId": "station_central",
+      "slotNumber": 1,
+      "status": "AVAILABLE",
+      "condition": "EXCELLENT",
+      "model": "CityBike A1",
+      "color": "Blue",
+      "kmsRidden": 120,
+      "lastServiced": "2026-04-12T08:00:00Z",
+      "createdAt": null
+    },
+    "bike_c2": {
+      "id": "bike_c2",
+      "stationId": "station_central",
+      "slotNumber": 2,
+      "status": "AVAILABLE",
+      "condition": "GOOD",
+      "model": "CityBike A2",
+      "color": "White",
+      "kmsRidden": 210,
+      "lastServiced": "2026-04-06T08:00:00Z",
+      "createdAt": null
+    },
+    "bike_c3": {
+      "id": "bike_c3",
+      "stationId": "station_central",
+      "slotNumber": 3,
+      "status": "MAINTENANCE",
+      "condition": "FAIR",
+      "model": "CityBike A3",
+      "color": "Red",
+      "kmsRidden": 450,
+      "lastServiced": "2026-03-23T08:00:00Z",
+      "createdAt": null
+    },
+    "bike_d1": {
+      "id": "bike_d1",
+      "stationId": "station_downtown",
+      "slotNumber": 1,
+      "status": "AVAILABLE",
+      "condition": "EXCELLENT",
+      "model": "MetroBike D1",
+      "color": "Black",
+      "kmsRidden": 85,
+      "lastServiced": "2026-04-14T08:00:00Z",
+      "createdAt": null
+    },
+    "bike_d2": {
+      "id": "bike_d2",
+      "stationId": "station_downtown",
+      "slotNumber": 2,
+      "status": "BOOKED",
+      "condition": "GOOD",
+      "model": "MetroBike D2",
+      "color": "Green",
+      "kmsRidden": 178,
+      "lastServiced": "2026-04-10T08:00:00Z",
+      "createdAt": null
+    },
+    "bike_p1": {
+      "id": "bike_p1",
+      "stationId": "station_park",
+      "slotNumber": 1,
+      "status": "AVAILABLE",
+      "condition": "GOOD",
+      "model": "ParkBike P1",
+      "color": "Blue",
+      "kmsRidden": 165,
+      "lastServiced": "2026-04-02T08:00:00Z",
+      "createdAt": null
+    },
+    "bike_t1": {
+      "id": "bike_t1",
+      "stationId": "station_terminal",
+      "slotNumber": 1,
+      "status": "AVAILABLE",
+      "condition": "EXCELLENT",
+      "model": "TerminalBike T1",
+      "color": "Silver",
+      "kmsRidden": 102,
+      "lastServiced": "2026-04-16T08:00:00Z",
+      "createdAt": null
+    },
+    "bike_t2": {
+      "id": "bike_t2",
+      "stationId": "station_terminal",
+      "slotNumber": 2,
+      "status": "AVAILABLE",
+      "condition": "GOOD",
+      "model": "TerminalBike T2",
+      "color": "Black",
+      "kmsRidden": 132,
+      "lastServiced": "2026-04-08T08:00:00Z",
+      "createdAt": null
+    }
+  },
+  "bookings": {
+    "booking_history_1": {
+      "id": "booking_history_1",
+      "userId": "user_reyu",
+      "bikeId": "bike_d2",
+      "stationId": "station_downtown",
+      "slotNumber": 2,
+      "bookingDate": "2026-04-12T05:00:00Z",
+      "pickupDate": "2026-04-12T05:15:00Z",
+      "returnDate": "2026-04-12T06:00:00Z",
+      "status": "COMPLETED",
+      "rideDistance": 7.8,
+      "rideDuration": 45
+    }
+  }
+}
