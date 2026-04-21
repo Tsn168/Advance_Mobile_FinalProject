@@ -24,6 +24,7 @@ class MapViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   List<Station> get stations => _stations;
   Station? get selectedStation => _selectedStation;
+  String? get selectedStationId => _selectedStation?.id;
   Set<Marker> get markers => _markers;
 
   CameraPosition get initialCameraPosition {
@@ -68,6 +69,8 @@ class MapViewModel extends ChangeNotifier {
             });
             if (selected.isNotEmpty) {
               _selectedStation = selected.first;
+            } else {
+              _selectedStation = null;
             }
           }
 
@@ -120,15 +123,39 @@ class MapViewModel extends ChangeNotifier {
   }
 
   void _syncMapState() {
-    _markers = _stations.map((station) {
+    _markers = _buildMarkers(onStationTap: selectStation);
+  }
+
+  Set<Marker> buildMarkers({required ValueChanged<String> onStationTap}) {
+    return _buildMarkers(onStationTap: onStationTap);
+  }
+
+  Set<Marker> _buildMarkers({required ValueChanged<String> onStationTap}) {
+    return _stations.map((station) {
+      final isSelected = _selectedStation?.id == station.id;
+      final hasAvailableBikes = station.hasAvailableBikes;
+
+      final icon = isSelected
+          ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen)
+          : hasAvailableBikes
+          ? BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure)
+          : BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose);
+
       return Marker(
         markerId: MarkerId(station.id),
         position: LatLng(station.latitude, station.longitude),
+        icon: icon,
+        alpha: isSelected
+            ? 1
+            : hasAvailableBikes
+            ? 0.95
+            : 0.65,
+        zIndex: isSelected ? 2 : 1,
         infoWindow: InfoWindow(
-          title: station.name,
-          snippet: '${station.availableBikes} bikes available',
+          title: '${station.availableBikes} bikes',
+          snippet: station.name,
         ),
-        onTap: () => selectStation(station.id),
+        onTap: () => onStationTap(station.id),
       );
     }).toSet();
   }

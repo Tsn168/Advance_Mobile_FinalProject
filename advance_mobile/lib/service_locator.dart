@@ -93,7 +93,11 @@ Future<void> setupServiceLocator() async {
   );
 
   getIt.registerFactory<BookingViewModel>(
-    () =>
-        BookingViewModel(getIt<IBookingRepository>(), getIt<IPassRepository>()),
+    () => BookingViewModel(
+      getIt<IBookingRepository>(),
+      getIt<IPassRepository>(),
+      getIt<IBikeRepository>(),
+      getIt<IStationRepository>(),
+    ),
   );
 }

@@ -102,12 +102,6 @@ class BookingRepositoryFirebase implements IBookingRepository {
         .set(BookingDTO.fromModel(created).toFirebase())
         .timeout(FirebaseConfig.defaultTimeout);
 
-    await _bikesRef.child(booking.bikeId).update({
-      'status': BikeStatus.booked.name.toUpperCase(),
-    }).timeout(FirebaseConfig.defaultTimeout);
-
-    await _syncStationAvailability(booking.stationId);
-
     return created;
   }
 
