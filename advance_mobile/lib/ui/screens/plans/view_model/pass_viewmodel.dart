@@ -29,24 +29,6 @@ class PassViewModel extends ChangeNotifier {
   String get currentUserId => _currentUserId;
   bool get hasActivePass => _activePass != null;
 
-  Future<bool> canPurchasePass() async {
-    final currentActivePass = await _passRepository.getActivePass(_currentUserId);
-    _activePass = currentActivePass;
-    return currentActivePass == null || currentActivePass.isExpired;
-  }
-
-  String getActivePassInfo() {
-    final pass = _activePass;
-    if (pass == null) {
-      return 'No active pass.';
-    }
-
-    final month = pass.expiryDate.toLocal().month.toString().padLeft(2, '0');
-    final day = pass.expiryDate.toLocal().day.toString().padLeft(2, '0');
-    final year = pass.expiryDate.toLocal().year;
-    return 'You already have an active ${pass.type.displayName} until $month/$day/$year.';
-  }
-
   Future<void> initialize({String userId = AppConstants.defaultUserId}) async {
     _currentUserId = userId;
     await Future.wait([loadAvailablePasses(), loadUserPasses()]);
@@ -97,40 +79,32 @@ class PassViewModel extends ChangeNotifier {
       return false;
     }
 
-    final allowed = await canPurchasePass();
-    if (!allowed) {
-      _errorMessage = getActivePassInfo();
-      _state = AppState.error;
-      notifyListeners();
-      return false;
-    }
-
     try {
       _state = AppState.loading;
       _errorMessage = null;
       notifyListeners();
 
-      final currentActivePass = await _passRepository.getActivePass(_currentUserId);
-      if (currentActivePass != null && !currentActivePass.isExpired) {
-        _errorMessage = getActivePassInfo();
-        _state = AppState.error;
-        notifyListeners();
-        return false;
+      final currentActivePass = await _passRepository.getActivePass(
+        _currentUserId,
+      );
+      if (currentActivePass != null) {
+        await _passRepository.updatePass(
+          currentActivePass.copyWith(isActive: false),
+        );
       }
 
-      final nowUtc = DateTime.now().toUtc();
-      final expiryUtc = nowUtc.add(Duration(days: passType.durationDays));
+      final now = DateTime.now();
       final createdPass = await _passRepository.createPass(
         Pass(
           id: '',
           userId: _currentUserId,
           type: passType,
-          startDate: nowUtc,
-          expiryDate: expiryUtc,
+          startDate: now,
+          expiryDate: now.add(Duration(days: passType.durationDays)),
           isActive: true,
-          price: _purchasePrice(passType),
+          price: passType.price,
           ridesUsed: 0,
-          createdAt: nowUtc,
+          createdAt: now,
         ),
       );
 
@@ -146,19 +120,6 @@ class PassViewModel extends ChangeNotifier {
       _errorMessage = ErrorHandlerService.handleError(error);
       notifyListeners();
       return false;
-    }
-  }
-
-  double _purchasePrice(PassType passType) {
-    switch (passType) {
-      case PassType.day:
-        return 5.00;
-      case PassType.monthly:
-        return 25.00;
-      case PassType.annual:
-        return 150.00;
-      case PassType.weekly:
-        return passType.price;
     }
   }
 
