@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../ui/theme/app_colors.dart';
+import '../../ui/theme/app_dimensions.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/theme/app_text_styles.dart';
 import '../common/custom_card.dart';
@@ -71,12 +72,12 @@ class PaymentMethodCard extends StatelessWidget {
             Container(
               width: 50,
               height: 50,
-              decoration: BoxDecoration(
-                color: methodIcon == Icons.apple
-                    ? AppColors.black
-                    : AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
+               decoration: BoxDecoration(
+                 color: methodIcon == Icons.apple
+                     ? AppColors.black
+                     : AppColors.primary.withOpacity(0.1),
+                 borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+               ),
               child: Center(
                 child: Icon(
                   methodIcon,

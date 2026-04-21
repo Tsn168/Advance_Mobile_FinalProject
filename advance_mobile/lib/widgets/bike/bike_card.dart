@@ -26,8 +26,13 @@ class BikeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCard(
-      child: Column(
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: AppDimensions.cardMarginVertical,
+        horizontal: AppDimensions.cardMarginHorizontal,
+      ),
+      child: CustomCard(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header: Slot Number and Status
@@ -47,17 +52,17 @@ class BikeCard extends StatelessWidget {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: isAvailable
-                      ? AppColors.success.withValues(alpha: 0.2)
-                      : AppColors.error.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+               Container(
+                 padding: const EdgeInsets.symmetric(
+                   horizontal: AppSpacing.md,
+                   vertical: AppSpacing.sm,
+                 ),
+                 decoration: BoxDecoration(
+                   color: isAvailable
+                       ? AppColors.success.withValues(alpha: 0.2)
+                       : AppColors.error.withValues(alpha: 0.2),
+                   borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                 ),
                 child: Text(
                   isAvailable ? 'Available' : 'Booked',
                   style: AppTextStyles.caption.copyWith(
@@ -125,10 +130,10 @@ class BikeCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
+                       const SizedBox(height: AppSpacing.sm),
+                       ClipRRect(
+                         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium / 3),
+                         child: LinearProgressIndicator(
                           value: batteryLevel! / 100,
                           minHeight: 6,
                           backgroundColor: AppColors.grey300,
@@ -148,18 +153,19 @@ class BikeCard extends StatelessWidget {
 
           const SizedBox(height: AppSpacing.lg),
 
-          // Book Button
-          CustomButton(
-            label: isAvailable ? 'Book Now' : 'Not Available',
-            onPressed: isAvailable ? onBook : () {},
-            width: double.infinity,
-            backgroundColor: isAvailable
-                ? AppColors.primary
-                : AppColors.grey400,
-            icon: Icons.directions_bike,
-          ),
-        ],
-      ),
-    );
-  }
+           // Book Button
+           CustomButton(
+             label: isAvailable ? 'Book Now' : 'Not Available',
+             onPressed: isAvailable ? onBook : () {},
+             width: double.infinity,
+             backgroundColor: isAvailable
+                 ? AppColors.primary
+                 : AppColors.grey400,
+             icon: Icons.directions_bike,
+           ),
+         ],
+       ),
+     ),
+   );
+ }
 }

@@ -4,10 +4,12 @@ import 'package:flutter/foundation.dart';
 import '../../../../services/error_handler.dart';
 
 import '../../../../config/app_constants.dart';
+import '../../../../data/repositories/bike/bike_repository.dart';
 import '../../../../model/booking/booking.dart';
 import '../../../../model/pass/pass.dart';
 import '../../../../data/repositories/booking/booking_repository.dart';
 import '../../../../data/repositories/pass/pass_repository.dart';
+import '../../../../data/repositories/station/station_repository.dart';
 
 enum BookingFlowStatus {
   idle,
@@ -20,10 +22,18 @@ enum BookingFlowStatus {
 }
 
 class BookingViewModel extends ChangeNotifier {
-  BookingViewModel(this._bookingRepository, this._passRepository);
+  BookingViewModel(
+    this._bookingRepository,
+    this._passRepository, {
+    IBikeRepository? bikeRepository,
+    IStationRepository? stationRepository,
+  }) : _bikeRepository = bikeRepository,
+       _stationRepository = stationRepository;
 
   final IBookingRepository _bookingRepository;
   final IPassRepository _passRepository;
+  final IBikeRepository? _bikeRepository;
+  final IStationRepository? _stationRepository;
 
   AppState _state = AppState.idle;
   BookingFlowStatus _flowStatus = BookingFlowStatus.idle;
@@ -220,6 +230,19 @@ class BookingViewModel extends ChangeNotifier {
         return false;
       }
 
+      final bikeRepository = _bikeRepository;
+      if (bikeRepository != null) {
+        final liveBike = await bikeRepository.getBikeById(bikeId);
+        if (liveBike == null || !liveBike.isAvailable) {
+          _state = AppState.error;
+          _flowStatus = BookingFlowStatus.failed;
+          _errorMessage =
+              'This bike is no longer available. Please select another bike.';
+          _notifySafe();
+          return false;
+        }
+      }
+
       _flowStatus = BookingFlowStatus.booking;
       _notifySafe();
 
@@ -236,6 +259,26 @@ class BookingViewModel extends ChangeNotifier {
       );
 
       _activeBooking = booking;
+
+      final stationRepository = _stationRepository;
+      final liveBikeRepository = _bikeRepository;
+      if (stationRepository != null && liveBikeRepository != null) {
+        final availableBikes = await liveBikeRepository.getAvailableBikesByStation(
+          stationId,
+        );
+        final station = await stationRepository.getStationById(stationId);
+        if (station != null) {
+          final nextAvailability = availableBikes.length.clamp(
+            0,
+            station.totalSlots,
+          );
+          await stationRepository.updateStationAvailability(
+            stationId,
+            nextAvailability,
+          );
+        }
+      }
+
       _state = AppState.success;
       _flowStatus = BookingFlowStatus.booked;
       _notifySafe();

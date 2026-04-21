@@ -135,6 +135,49 @@ void main() {
       expect(viewModel.selectedBike?.id, 'bike_1');
       expect(viewModel.selectedBike?.status, BikeStatus.booked);
     });
+
+    test('13.1 refreshBikes recovers from transient error', () async {
+      final flakyRepository = _FlakyBikeRepository(
+        stationBikes: {
+          'station_1': [bike1, bike2],
+        },
+      );
+      final vm = StationDetailViewModel(flakyRepository, stationRepository);
+      addTearDown(() {
+        vm.dispose();
+        flakyRepository.dispose();
+      });
+
+      await vm.loadStationDetails('station_1');
+      expect(vm.state, AppState.success);
+
+      await vm.refreshBikes();
+      expect(vm.state, AppState.error);
+      expect(vm.errorMessage, contains('Transient network error'));
+
+      await vm.refreshBikes();
+      expect(vm.state, AppState.success);
+      expect(vm.bikes.length, 2);
+    });
+
+    test('13.6 stream error transitions to error state', () async {
+      await viewModel.loadStationDetails('station_1');
+      bikeRepository.emitError('station_1', Exception('Live stream disconnected'));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(viewModel.state, AppState.error);
+      expect(viewModel.errorMessage, contains('Live stream disconnected'));
+    });
+
+    test('14.3 dispose cancels active realtime subscription', () async {
+      await viewModel.loadStationDetails('station_1');
+      expect(bikeRepository.activeListenerCount('station_1'), 1);
+
+      viewModel.dispose();
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      expect(bikeRepository.activeListenerCount('station_1'), 0);
+    });
   });
 }
 
@@ -160,7 +203,15 @@ class _FakeBikeRepository implements IBikeRepository {
   Stream<List<Bike>> watchBikesByStation(String stationId) {
     final controller = _controllers.putIfAbsent(
       stationId,
-      () => StreamController<List<Bike>>.broadcast(),
+      () => StreamController<List<Bike>>.broadcast(
+        onListen: () {
+          _activeListeners[stationId] = (_activeListeners[stationId] ?? 0) + 1;
+        },
+        onCancel: () {
+          final current = _activeListeners[stationId] ?? 0;
+          _activeListeners[stationId] = current > 0 ? current - 1 : 0;
+        },
+      ),
     );
     return controller.stream;
   }
@@ -173,6 +224,18 @@ class _FakeBikeRepository implements IBikeRepository {
     );
     controller.add(List<Bike>.from(bikes));
   }
+
+  void emitError(String stationId, Object error) {
+    final controller = _controllers.putIfAbsent(
+      stationId,
+      () => StreamController<List<Bike>>.broadcast(),
+    );
+    controller.addError(error);
+  }
+
+  final Map<String, int> _activeListeners = {};
+
+  int activeListenerCount(String stationId) => _activeListeners[stationId] ?? 0;
 
   void dispose() {
     for (final controller in _controllers.values) {
@@ -269,5 +332,20 @@ class _FakeStationRepository implements IStationRepository {
   @override
   Future<List<Station>> getStationsWithAvailableBikes() {
     throw UnimplementedError();
+  }
+}
+
+class _FlakyBikeRepository extends _FakeBikeRepository {
+  _FlakyBikeRepository({required super.stationBikes});
+
+  var _refreshAttempt = 0;
+
+  @override
+  Future<List<Bike>> getBikesByStation(String stationId) async {
+    _refreshAttempt += 1;
+    if (_refreshAttempt == 2) {
+      throw Exception('Transient network error');
+    }
+    return super.getBikesByStation(stationId);
   }
 }

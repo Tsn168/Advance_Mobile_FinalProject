@@ -50,9 +50,14 @@ class StationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCard(
-      onTap: onTap,
-      child: Column(
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: AppDimensions.cardMarginVertical,
+        horizontal: AppDimensions.cardMarginHorizontal,
+      ),
+      child: CustomCard(
+        onTap: onTap,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header: Station Name and Status
@@ -172,6 +177,7 @@ class StationCard extends StatelessWidget {
             ],
           ),
         ],
+        ),
       ),
     );
   }

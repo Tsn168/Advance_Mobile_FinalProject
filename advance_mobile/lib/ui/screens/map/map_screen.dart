@@ -30,8 +30,6 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  String? _selectedStationId;
-
   @override
   Widget build(BuildContext context) {
     return Consumer<MapViewModel>(
@@ -260,12 +258,31 @@ class _MapScreenState extends State<MapScreen> {
       return const Center(child: Text('No stations available'));
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      itemCount: stations.length,
-      itemBuilder: (context, index) {
-        final station = stations[index];
-        final isSelected = mapViewModel.selectedStation?.id == station.id;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Text(
+            'Tap a station marker',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF455A64),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            scrollDirection: Axis.horizontal,
+            itemCount: stations.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final station = stations[index];
+              final isSelected = mapViewModel.selectedStationId == station.id;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -364,10 +381,39 @@ class _MapScreenState extends State<MapScreen> {
     BikeViewModel bikeViewModel,
     BookingViewModel bookingViewModel,
   ) async {
-    final messenger = ScaffoldMessenger.of(context);
+    mapViewModel.selectStation(stationId);
+
+    final openStationDetail = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Consumer<MapViewModel>(
+          builder: (context, liveMapViewModel, _) {
+            final selectedId =
+                liveMapViewModel.selectedStationId;
+            final station = _findStationById(selectedId);
+
+            if (station == null) {
+              return const SizedBox.shrink();
+            }
+
+            return StationBottomSheet(
+              station: station,
+              onViewBikes: () => Navigator.of(sheetContext).pop(true),
+            );
+          },
+        );
+      },
+    );
+
+    if (openStationDetail == true) {
+      await _openStationDetail();
+    }
+  }
 
   Future<void> _openStationDetail() async {
-    final stationId = _selectedStationId;
+    final stationId = context.read<MapViewModel>().selectedStationId;
     if (stationId == null) {
       return;
     }
@@ -386,16 +432,11 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Station? _findStationById(List<Station> stations, String? stationId) {
+  Station? _findStationById(String? stationId) {
     if (stationId == null) {
       return null;
     }
 
-    for (final station in stations) {
-      if (station.id == stationId) {
-        return station;
-      }
-    }
-    return null;
+    return context.read<MapViewModel>().getStationById(stationId);
   }
 }

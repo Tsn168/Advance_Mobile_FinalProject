@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/theme/app_colors.dart';
+
 class StationMarker extends StatelessWidget {
   final int availableBikes;
   final bool isSelected;
@@ -14,9 +16,9 @@ class StationMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isSelected ? const Color(0xFF00C853) : Colors.white;
+    final backgroundColor = isSelected ? AppColors.green : Colors.white;
     final borderColor = isSelected
-        ? const Color(0xFF00C853)
+        ? AppColors.green
         : const Color(0xFFB0BEC5);
     final textColor = isSelected ? Colors.white : const Color(0xFF263238);
 

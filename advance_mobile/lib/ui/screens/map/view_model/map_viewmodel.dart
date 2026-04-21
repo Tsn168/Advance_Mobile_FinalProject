@@ -25,7 +25,16 @@ class MapViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   List<Station> get stations => _stations;
   Station? get selectedStation => _selectedStation;
+  String? get selectedStationId => _selectedStation?.id;
   Set<Marker> get markers => _markers;
+
+  Station? getStationById(String stationId) {
+    try {
+      return _stations.firstWhere((station) => station.id == stationId);
+    } catch (_) {
+      return null;
+    }
+  }
 
   CameraPosition get initialCameraPosition {
     final station =
@@ -69,6 +78,8 @@ class MapViewModel extends ChangeNotifier {
             });
             if (selected.isNotEmpty) {
               _selectedStation = selected.first;
+            } else {
+              _selectedStation = null;
             }
           }
 
@@ -125,9 +136,12 @@ class MapViewModel extends ChangeNotifier {
       return Marker(
         markerId: MarkerId(station.id),
         position: LatLng(station.latitude, station.longitude),
+        alpha: _selectedStation?.id == station.id
+            ? 1
+            : (station.hasAvailableBikes ? 1 : 0.6),
         infoWindow: InfoWindow(
-          title: station.name,
-          snippet: '${station.availableBikes} bikes available',
+          title: '${station.availableBikes} bikes',
+          snippet: station.name,
         ),
         onTap: () => selectStation(station.id),
       );

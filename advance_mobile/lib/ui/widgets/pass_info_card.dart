@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../model/pass/pass.dart';
+import '../../ui/theme/app_dimensions.dart';
+import '../../ui/theme/app_spacing.dart';
+import '../../ui/theme/app_text_styles.dart';
 
 class PassInfoCard extends StatelessWidget {
   final Pass? activePass;
@@ -10,14 +13,14 @@ class PassInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (activePass == null) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF1F4F8),
-          borderRadius: BorderRadius.circular(20),
-        ),
+   if (activePass == null) {
+       return Container(
+         width: double.infinity,
+         padding: EdgeInsets.all(AppDimensions.cardPadding),
+         decoration: BoxDecoration(
+           color: const Color(0xFFF1F4F8),
+           borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+         ),
         child: Row(
           children: [
             const Icon(
@@ -56,54 +59,51 @@ class PassInfoCard extends StatelessWidget {
       );
     }
 
-    final pass = activePass!;
+     final pass = activePass!;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF00695C), Color(0xFF00897B)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
+     return Container(
+       width: double.infinity,
+       padding: EdgeInsets.all(AppDimensions.cardPadding),
+       decoration: BoxDecoration(
+         gradient: const LinearGradient(
+           begin: Alignment.topLeft,
+           end: Alignment.bottomRight,
+           colors: [Color(0xFF00695C), Color(0xFF00897B)],
+         ),
+         borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+       ),
       child: Row(
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'MEMBERSHIP STATUS',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.82),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.45,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${pass.type.displayName} Active',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Expires: ${_formatDate(pass.expiryDate)}',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+         children: [
+           Text(
+             'MEMBERSHIP STATUS',
+             style: AppTextStyles.caption.copyWith(
+               color: Colors.white.withValues(alpha: 0.82),
+               fontWeight: FontWeight.w700,
+               letterSpacing: 0.45,
+             ),
+           ),
+           const SizedBox(height: AppSpacing.sm),
+           Text(
+             '${pass.type.displayName} Active',
+             style: AppTextStyles.h5.copyWith(
+               color: Colors.white,
+               fontWeight: FontWeight.bold,
+             ),
+           ),
+           const SizedBox(height: AppSpacing.xs),
+           Text(
+             'Expires: ${_formatDate(pass.expiryDate)}',
+             style: AppTextStyles.bodySmall.copyWith(
+               color: Colors.white.withValues(alpha: 0.9),
+               fontWeight: FontWeight.w500,
+             ),
+           ),
+         ],
+       ),
           ),
           IconButton(
             onPressed: onManage,

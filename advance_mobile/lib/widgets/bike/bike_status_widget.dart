@@ -70,10 +70,15 @@ class BikeStatusWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCard(
-      backgroundColor: backgroundColor,
-      border: Border.all(color: statusColor, width: 1.5),
-      child: Column(
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: AppDimensions.cardMarginVertical,
+        horizontal: AppDimensions.cardMarginHorizontal,
+      ),
+      child: CustomCard(
+        backgroundColor: backgroundColor,
+        border: Border.all(color: statusColor, width: 1.5),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header: Status Badge
@@ -135,6 +140,7 @@ class BikeStatusWidget extends StatelessWidget {
             _buildNextMaintenanceInfo(),
           ],
         ],
+        ),
       ),
     );
   }
@@ -160,9 +166,9 @@ class BikeStatusWidget extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         // Battery progress bar
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
+         ClipRRect(
+           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium / 3),
+           child: LinearProgressIndicator(
             value: batteryLevel! / 100,
             minHeight: 6,
             backgroundColor: AppColors.grey300,
@@ -249,13 +255,13 @@ class BikeStatusWidget extends StatelessWidget {
                     style: AppTextStyles.label.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
+                   ),
+                 ],
+               ),
+             ),
+           ],
+         ),
+       ],
+     );
+ }
 }

@@ -63,8 +63,13 @@ class SubscriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCard(
-      padding: const EdgeInsets.all(0),
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: AppDimensions.cardMarginVertical,
+        horizontal: AppDimensions.cardMarginHorizontal,
+      ),
+      child: CustomCard(
+        padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -114,10 +119,10 @@ class SubscriptionCard extends StatelessWidget {
                     horizontal: AppSpacing.md,
                     vertical: AppSpacing.sm,
                   ),
-                  decoration: BoxDecoration(
-                    color: badgeColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                   decoration: BoxDecoration(
+                     color: badgeColor,
+                     borderRadius: BorderRadius.circular(AppDimensions.buttonBorderRadius),
+                   ),
                   child: Text(
                     badgeText,
                     style: AppTextStyles.caption.copyWith(
@@ -205,6 +210,7 @@ class SubscriptionCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

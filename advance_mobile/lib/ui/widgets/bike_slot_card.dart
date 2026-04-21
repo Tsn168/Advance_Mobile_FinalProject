@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../model/bike/bike.dart';
+import '../../ui/theme/app_colors.dart';
 
 class BikeSlotCard extends StatelessWidget {
-  static const Color _availableCardColor = Color(0xFF8B9DC3);
-  static const Color _unavailableCardColor = Color(0xFF9EA7B8);
-  static const Color _emptySlotCardColor = Color(0xFFE3E8F2);
+  static const Color _availableCardColor = AppColors.purpleBlue; // Purple-Blue for bike cards
+  static const Color _unavailableCardColor = Color(0xFF9EA7B8); // Keep existing for now
+  static const Color _emptySlotCardColor = Color(0xFFE3E8F2); // Keep existing for now
 
   final Bike? bike;
   final int slotNumber;
@@ -111,10 +112,10 @@ class _StatusBadge extends StatelessWidget {
     Color foreground;
 
     switch (label) {
-      case 'AVAILABLE':
-        background = const Color(0xFF00BCD4);
-        foreground = Colors.white;
-        break;
+       case 'AVAILABLE':
+         background = AppColors.teal;
+         foreground = Colors.white;
+         break;
       case 'UNAVAILABLE':
         background = const Color(0xFFFFCDD2);
         foreground = const Color(0xFFB71C1C);

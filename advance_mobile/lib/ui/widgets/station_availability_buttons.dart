@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../ui/theme/app_colors.dart';
+
 class StationAvailabilityButtons extends StatelessWidget {
   final int availableBikes;
   final int emptySlots;
@@ -15,25 +17,25 @@ class StationAvailabilityButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: [
-        Expanded(
-          child: _AvailabilityButton(
-            count: availableBikes,
-            label: 'BIKES AVAILABLE',
-            color: const Color(0xFF00BCD4),
-            onTap: onViewBikes,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _AvailabilityButton(
-            count: emptySlots,
-            label: 'EMPTY SLOTS',
-            color: const Color(0xFF81D4FA),
-            onTap: null,
-          ),
-        ),
-      ],
+         children: [
+         Expanded(
+           child: _AvailabilityButton(
+             count: availableBikes,
+             label: 'BIKES AVAILABLE',
+             color: AppColors.teal,
+             onTap: onViewBikes,
+           ),
+         ),
+         const SizedBox(width: 16),
+         Expanded(
+           child: _AvailabilityButton(
+             count: emptySlots,
+             label: 'EMPTY SLOTS',
+             color: AppColors.lightBlue,
+             onTap: null,
+           ),
+         ),
+       ],
     );
   }
 }

@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
 import '../../../model/bike/bike.dart';
 import '../../../model/station/station.dart';
-import '../../states/navigation_state.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+import '../../theme/app_text_styles.dart';
 import '../home/view_model/booking_viewmodel.dart';
 import '../plans/plans_screen.dart';
 import '../plans/view_model/pass_viewmodel.dart';
@@ -18,10 +22,12 @@ class BookingConfirmationScreen extends StatefulWidget {
     super.key,
     required this.station,
     required this.bike,
+    this.onBikeUnavailable,
   });
 
   final Station station;
   final Bike bike;
+  final Future<void> Function()? onBikeUnavailable;
 
   @override
   State<BookingConfirmationScreen> createState() =>
@@ -60,7 +66,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             bookingViewModel.flowStatus == BookingFlowStatus.booking;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Confirm Booking')),
+          appBar: AppBar(
+        title: const Text('Confirm Booking'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
+      ),
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -84,25 +94,31 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Widget _buildBookingSummaryCard() {
-    return CustomCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Booking Summary',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Text('Station: ${widget.station.name}'),
-          const SizedBox(height: 6),
-          Text('Bike: #${widget.bike.id}'),
-          const SizedBox(height: 6),
-          Text('Slot: ${widget.bike.slotNumber}'),
-          const SizedBox(height: 6),
-          Text('Model: ${widget.bike.model}'),
-          const SizedBox(height: 6),
-          Text('Condition: ${widget.bike.condition.displayName}'),
-        ],
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.cardPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Booking Summary',
+              style: AppTextStyles.h5,
+            ),
+            const SizedBox(height: 12),
+            Text('Station: ${widget.station.name}'),
+            const SizedBox(height: 6),
+            Text('Bike: #${widget.bike.id}'),
+            const SizedBox(height: 6),
+            Text('Slot: ${widget.bike.slotNumber}'),
+            const SizedBox(height: 6),
+            Text('Model: ${widget.bike.model}'),
+            const SizedBox(height: 6),
+            Text('Condition: ${widget.bike.condition.displayName}'),
+          ],
+        ),
       ),
     );
   }
@@ -114,20 +130,30 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }) {
     final hasPass = passViewModel.hasActivePass;
 
-    return CustomCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Authorization',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          if (hasPass)
-            _buildHasPassSection(passViewModel, bookingViewModel, isProcessing)
-          else
-            _buildNoPassSection(bookingViewModel, passViewModel, isProcessing),
-        ],
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppDimensions.cardPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Authorization',
+              style: AppTextStyles.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            if (isProcessing) ...[
+              const LinearProgressIndicator(),
+              const SizedBox(height: 12),
+            ],
+            if (hasPass)
+              _buildHasPassSection(passViewModel, bookingViewModel, isProcessing)
+            else
+              _buildNoPassSection(bookingViewModel, passViewModel, isProcessing),
+          ],
+        ),
       ),
     );
   }
@@ -142,10 +168,19 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const PassBadge(
-          badgeType: PassBadgeType.active,
-          label: 'Active Pass',
-          isActive: true,
+        Row(
+          children: const [
+            Icon(
+              Icons.verified,
+              color: Color(0xFF2E7D32),
+              semanticLabel: 'Pass verified',
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Active Pass',
+              style: AppTextStyles.bodyMedium,
+            ),
+          ],
         ),
         if (activePass != null) ...[
           const SizedBox(height: 12),
@@ -212,14 +247,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Future<void> _onGoToPlansTap(PassViewModel passViewModel) async {
-    try {
-      context.read<NavigationState>().goToPlans();
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
-    } catch (_) {
-      // NavigationState may not be provided in isolated widget tests.
-    }
-
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider<PassViewModel>.value(
@@ -227,6 +254,18 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           child: const PlansScreen(),
         ),
       ),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    await passViewModel.loadUserPasses();
+    final bookingViewModel = context.read<BookingViewModel>();
+    await bookingViewModel.prepareBooking(
+      bikeId: widget.bike.id,
+      stationId: widget.station.id,
+      slotNumber: widget.bike.slotNumber,
     );
   }
 
@@ -263,6 +302,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             lowerMessage.contains('no longer available') ||
                 lowerMessage.contains('not available');
 
+        if (isRaceCondition) {
+          unawaited(_showBikeUnavailableDialog(message));
+          return;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
@@ -276,12 +320,39 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             ),
           ),
         );
-
-        if (isRaceCondition && Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
       }
     });
+  }
+
+  Future<void> _showBikeUnavailableDialog(String message) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Bike Unavailable'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Back to Station'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    final callback = widget.onBikeUnavailable;
+    if (callback != null) {
+      await callback();
+    }
+
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   String _formatDate(DateTime date) {

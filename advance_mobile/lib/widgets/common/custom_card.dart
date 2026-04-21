@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../ui/theme/app_spacing.dart';
+import '../../ui/theme/app_dimensions.dart';
 
 class CustomCard extends StatelessWidget {
   final Widget child;
@@ -15,8 +15,8 @@ class CustomCard extends StatelessWidget {
     required this.child,
     this.backgroundColor = Colors.white,
     this.elevation = 2.0,
-    this.borderRadius = 12.0,
-    this.padding = const EdgeInsets.all(AppSpacing.lg),
+    this.borderRadius = AppDimensions.cardBorderRadius,
+    this.padding = const EdgeInsets.all(AppDimensions.cardPadding),
     this.onTap,
     this.border,
   });
