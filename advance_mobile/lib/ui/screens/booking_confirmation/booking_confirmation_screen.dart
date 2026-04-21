@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
 import '../../../model/bike/bike.dart';
 import '../../../model/station/station.dart';
-import '../../states/navigation_state.dart';
 import '../home/view_model/booking_viewmodel.dart';
 import '../plans/plans_screen.dart';
 import '../plans/view_model/pass_viewmodel.dart';
@@ -14,10 +15,12 @@ class BookingConfirmationScreen extends StatefulWidget {
     super.key,
     required this.station,
     required this.bike,
+    this.onBikeUnavailable,
   });
 
   final Station station;
   final Bike bike;
+  final Future<void> Function()? onBikeUnavailable;
 
   @override
   State<BookingConfirmationScreen> createState() =>
@@ -247,14 +250,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Future<void> _onGoToPlansTap(PassViewModel passViewModel) async {
-    try {
-      context.read<NavigationState>().goToPlans();
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
-    } catch (_) {
-      // NavigationState may not be provided in isolated widget tests.
-    }
-
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider<PassViewModel>.value(
@@ -262,6 +257,18 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           child: const PlansScreen(),
         ),
       ),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    await passViewModel.loadUserPasses();
+    final bookingViewModel = context.read<BookingViewModel>();
+    await bookingViewModel.prepareBooking(
+      bikeId: widget.bike.id,
+      stationId: widget.station.id,
+      slotNumber: widget.bike.slotNumber,
     );
   }
 
@@ -298,6 +305,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             lowerMessage.contains('no longer available') ||
                 lowerMessage.contains('not available');
 
+        if (isRaceCondition) {
+          unawaited(_showBikeUnavailableDialog(message));
+          return;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
@@ -311,12 +323,39 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             ),
           ),
         );
-
-        if (isRaceCondition && Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-        }
       }
     });
+  }
+
+  Future<void> _showBikeUnavailableDialog(String message) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Bike Unavailable'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Back to Station'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    final callback = widget.onBikeUnavailable;
+    if (callback != null) {
+      await callback();
+    }
+
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   String _formatDate(DateTime date) {

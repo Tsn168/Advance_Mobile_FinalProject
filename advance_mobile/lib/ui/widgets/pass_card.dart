@@ -8,7 +8,9 @@ class PassCard extends StatelessWidget {
   final Color badgeColor;
   final String? heroImagePath;
   final String description;
+  final double? displayPrice;
   final bool isSelected;
+  final bool isChooseEnabled;
   final VoidCallback onChoose;
 
   const PassCard({
@@ -18,12 +20,16 @@ class PassCard extends StatelessWidget {
     required this.badgeColor,
     this.heroImagePath,
     required this.description,
+    this.displayPrice,
     this.isSelected = false,
+    this.isChooseEnabled = true,
     required this.onChoose,
   });
 
   @override
   Widget build(BuildContext context) {
+    final priceToDisplay = displayPrice ?? passType.price;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -65,7 +71,7 @@ class PassCard extends StatelessWidget {
                     style: DefaultTextStyle.of(context).style,
                     children: [
                       TextSpan(
-                        text: '\$${passType.price.toStringAsFixed(2)}',
+                        text: '\$${priceToDisplay.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -95,11 +101,11 @@ class PassCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: onChoose,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2196F3),
-                      foregroundColor: Colors.white,
+                   child: ElevatedButton(
+                     onPressed: isChooseEnabled ? onChoose : null,
+                     style: ElevatedButton.styleFrom(
+                       backgroundColor: const Color(0xFF2196F3),
+                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),

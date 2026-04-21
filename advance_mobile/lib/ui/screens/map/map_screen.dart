@@ -29,8 +29,6 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  String? _selectedStationId;
-
   @override
   Widget build(BuildContext context) {
     return Consumer<MapViewModel>(
@@ -220,9 +218,7 @@ class _MapScreenState extends State<MapScreen> {
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final station = stations[index];
-              final selectedId =
-                  _selectedStationId ?? mapViewModel.selectedStationId;
-              final isSelected = selectedId == station.id;
+              final isSelected = mapViewModel.selectedStationId == station.id;
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -263,9 +259,6 @@ class _MapScreenState extends State<MapScreen> {
     MapViewModel mapViewModel,
     String stationId,
   ) async {
-    setState(() {
-      _selectedStationId = stationId;
-    });
     mapViewModel.selectStation(stationId);
 
     final openStationDetail = await showModalBottomSheet<bool>(
@@ -276,11 +269,8 @@ class _MapScreenState extends State<MapScreen> {
         return Consumer<MapViewModel>(
           builder: (context, liveMapViewModel, _) {
             final selectedId =
-                _selectedStationId ?? liveMapViewModel.selectedStationId;
-            final station = _findStationById(
-              liveMapViewModel.stations,
-              selectedId,
-            );
+                liveMapViewModel.selectedStationId;
+            final station = _findStationById(selectedId);
 
             if (station == null) {
               return const SizedBox.shrink();
@@ -301,7 +291,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _openStationDetail() async {
-    final stationId = _selectedStationId;
+    final stationId = context.read<MapViewModel>().selectedStationId;
     if (stationId == null) {
       return;
     }
@@ -320,16 +310,11 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Station? _findStationById(List<Station> stations, String? stationId) {
+  Station? _findStationById(String? stationId) {
     if (stationId == null) {
       return null;
     }
 
-    for (final station in stations) {
-      if (station.id == stationId) {
-        return station;
-      }
-    }
-    return null;
+    return context.read<MapViewModel>().getStationById(stationId);
   }
 }
