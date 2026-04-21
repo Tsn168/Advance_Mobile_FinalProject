@@ -9,8 +9,6 @@ class PassCard extends StatelessWidget {
   final String? heroImagePath;
   final String description;
   final bool isSelected;
-  final bool isChooseEnabled;
-  final double? displayPrice;
   final VoidCallback onChoose;
 
   const PassCard({
@@ -21,8 +19,6 @@ class PassCard extends StatelessWidget {
     this.heroImagePath,
     required this.description,
     this.isSelected = false,
-    this.isChooseEnabled = true,
-    this.displayPrice,
     required this.onChoose,
   });
 
@@ -69,8 +65,7 @@ class PassCard extends StatelessWidget {
                     style: DefaultTextStyle.of(context).style,
                     children: [
                       TextSpan(
-                        text:
-                            '\$${(displayPrice ?? passType.price).toStringAsFixed(2)}',
+                        text: '\$${passType.price.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -101,7 +96,7 @@ class PassCard extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: isChooseEnabled ? onChoose : null,
+                    onPressed: onChoose,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2196F3),
                       foregroundColor: Colors.white,

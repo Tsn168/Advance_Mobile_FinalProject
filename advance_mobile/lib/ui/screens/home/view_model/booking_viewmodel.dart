@@ -3,13 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../../config/app_constants.dart';
-import '../../../../data/repositories/bike/bike_repository.dart';
 import '../../../../model/booking/booking.dart';
-import '../../../../model/bike/bike.dart';
 import '../../../../model/pass/pass.dart';
 import '../../../../data/repositories/booking/booking_repository.dart';
 import '../../../../data/repositories/pass/pass_repository.dart';
-import '../../../../data/repositories/station/station_repository.dart';
 
 enum BookingFlowStatus {
   idle,
@@ -22,17 +19,10 @@ enum BookingFlowStatus {
 }
 
 class BookingViewModel extends ChangeNotifier {
-  BookingViewModel(
-    this._bookingRepository,
-    this._passRepository,
-    this._bikeRepository,
-    this._stationRepository,
-  );
+  BookingViewModel(this._bookingRepository, this._passRepository);
 
   final IBookingRepository _bookingRepository;
   final IPassRepository _passRepository;
-  final IBikeRepository _bikeRepository;
-  final IStationRepository _stationRepository;
 
   AppState _state = AppState.idle;
   BookingFlowStatus _flowStatus = BookingFlowStatus.idle;
@@ -232,51 +222,19 @@ class BookingViewModel extends ChangeNotifier {
       _flowStatus = BookingFlowStatus.booking;
       _notifySafe();
 
-      final bike = await _bikeRepository.getBikeById(bikeId);
-      if (bike == null || bike.status != BikeStatus.available) {
-        _state = AppState.error;
-        _flowStatus = BookingFlowStatus.failed;
-        _errorMessage =
-            'This bike is no longer available. Please refresh the bike list and go back to station details to choose another bike.';
-        _notifySafe();
-        return false;
-      }
-
-      final now = DateTime.now();
-      final createdBooking = await _bookingRepository.createBooking(
+      final booking = await _bookingRepository.createBooking(
         Booking(
           id: '',
           userId: _currentUserId,
           bikeId: bikeId,
           stationId: stationId,
           slotNumber: slotNumber,
-          bookingDate: now,
+          bookingDate: DateTime.now(),
           status: BookingStatus.active,
         ),
       );
 
-      try {
-        await _bikeRepository.updateBikeStatus(bikeId, BikeStatus.booked);
-      } catch (_) {
-        await _attemptRollbackBookingCreation(createdBooking.id);
-        rethrow;
-      }
-
-      try {
-        final station = await _stationRepository.getStationById(stationId);
-        final nextAvailability = station?.availableBikes ?? 0;
-
-        await _stationRepository.updateStationAvailability(
-          stationId,
-          nextAvailability,
-        );
-      } catch (_) {
-        await _attemptRollbackBookingCreation(createdBooking.id);
-        await _attemptRollbackBikeStatus(bikeId);
-        rethrow;
-      }
-
-      _activeBooking = createdBooking;
+      _activeBooking = booking;
       _state = AppState.success;
       _flowStatus = BookingFlowStatus.booked;
       _notifySafe();
@@ -287,22 +245,6 @@ class BookingViewModel extends ChangeNotifier {
       _errorMessage = ErrorHandler.handleError(error);
       _notifySafe();
       return false;
-    }
-  }
-
-  Future<void> _attemptRollbackBookingCreation(String bookingId) async {
-    try {
-      await _bookingRepository.updateBookingStatus(bookingId, BookingStatus.cancelled);
-    } catch (_) {
-      // Best-effort rollback.
-    }
-  }
-
-  Future<void> _attemptRollbackBikeStatus(String bikeId) async {
-    try {
-      await _bikeRepository.updateBikeStatus(bikeId, BikeStatus.available);
-    } catch (_) {
-      // Best-effort rollback.
     }
   }
 
