@@ -94,7 +94,7 @@ This behavior is validated by unit tests in
 
 ```bash
 cp .env.example .env
-# add GOOGLE_MAPS_API_KEY in .env
+# add GOOGLE_MAPS_API_KEY and FIREBASE_DATABASE_URL in .env
 
 flutter pub get
 flutter analyze
@@ -133,6 +133,9 @@ This project now supports Firebase **Realtime Database** repositories using:
 ### Run app with Realtime Database
 
 Ensure Firebase is initialized and available for your target platform.
+
+- Configure `FIREBASE_DATABASE_URL` in `.env` for local/default runs.
+- Precedence: `--dart-define FIREBASE_DATABASE_URL=...` overrides `.env`, and `.env` overrides the built-in default URL.
 
 ### Import the provided seed JSON into Realtime Database
 
