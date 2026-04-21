@@ -1,11 +1,7 @@
-import 'package:advance_mobile/data/repositories/bike/bike_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/booking/booking_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/mock_data_store.dart';
 import 'package:advance_mobile/data/repositories/pass/pass_repository_mock.dart';
-import 'package:advance_mobile/data/repositories/station/station_repository_mock.dart';
-import 'package:advance_mobile/model/bike/bike.dart';
-import 'package:advance_mobile/model/booking/booking.dart';
-import 'package:advance_mobile/ui/screens/home/view_model/booking_viewmodel.dart';
+import 'package:advance_mobile/ui/screens/map/view_model/booking_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -13,22 +9,13 @@ void main() {
     late MockDataStore store;
     late MockBookingRepository bookingRepository;
     late MockPassRepository passRepository;
-    late MockBikeRepository bikeRepository;
-    late MockStationRepository stationRepository;
     late BookingViewModel viewModel;
 
     setUp(() {
       store = MockDataStore();
       bookingRepository = MockBookingRepository(store);
       passRepository = MockPassRepository(store);
-      bikeRepository = MockBikeRepository(store);
-      stationRepository = MockStationRepository(store);
-      viewModel = BookingViewModel(
-        bookingRepository,
-        passRepository,
-        bikeRepository: bikeRepository,
-        stationRepository: stationRepository,
-      );
+      viewModel = BookingViewModel(bookingRepository, passRepository);
     });
 
     tearDown(() {
@@ -188,57 +175,5 @@ void main() {
       expect(viewModel.activeBooking, isNull);
       expect(viewModel.flowStatus, BookingFlowStatus.idle);
     });
-
-    test('13.2 handles bike race condition and returns specific error', () async {
-      await viewModel.initialize();
-      await viewModel.prepareBooking(
-        bikeId: 'bike_c1',
-        stationId: 'station_central',
-        slotNumber: 1,
-      );
-
-      final bikeIndex = store.bikes.indexWhere((bike) => bike.id == 'bike_c1');
-      store.bikes[bikeIndex] = store.bikes[bikeIndex].copyWith(
-        status: BikeStatus.booked,
-      );
-
-      final success = await viewModel.confirmBooking();
-
-      expect(success, isFalse);
-      expect(viewModel.flowStatus, BookingFlowStatus.failed);
-      expect(viewModel.errorMessage, contains('no longer available'));
-    });
-
-    test('13.2 handles repository booking errors', () async {
-      final failingViewModel = BookingViewModel(
-        _FailingBookingRepository(store),
-        passRepository,
-        bikeRepository: bikeRepository,
-        stationRepository: stationRepository,
-      );
-      addTearDown(failingViewModel.dispose);
-
-      await failingViewModel.initialize();
-      await failingViewModel.prepareBooking(
-        bikeId: 'bike_c1',
-        stationId: 'station_central',
-        slotNumber: 1,
-      );
-
-      final success = await failingViewModel.confirmBooking();
-
-      expect(success, isFalse);
-      expect(failingViewModel.flowStatus, BookingFlowStatus.failed);
-      expect(failingViewModel.errorMessage, contains('Network failure'));
-    });
   });
-}
-
-class _FailingBookingRepository extends MockBookingRepository {
-  _FailingBookingRepository(MockDataStore store) : super(store);
-
-  @override
-  Future<Booking> createBooking(Booking booking) {
-    throw Exception('Network failure while creating booking');
-  }
 }

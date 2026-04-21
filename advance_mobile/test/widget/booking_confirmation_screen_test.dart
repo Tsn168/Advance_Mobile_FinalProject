@@ -6,8 +6,9 @@ import 'package:advance_mobile/model/bike/bike.dart';
 import 'package:advance_mobile/model/pass/pass.dart';
 import 'package:advance_mobile/model/station/station.dart';
 import 'package:advance_mobile/ui/screens/booking_confirmation/booking_confirmation_screen.dart';
-import 'package:advance_mobile/ui/screens/home/view_model/booking_viewmodel.dart';
+import 'package:advance_mobile/ui/screens/map/view_model/booking_viewmodel.dart';
 import 'package:advance_mobile/ui/screens/plans/view_model/pass_viewmodel.dart';
+import 'package:advance_mobile/ui/states/navigation_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -112,7 +113,7 @@ void main() {
       expect(hasPassAfterTicket, isTrue);
     });
 
-    testWidgets('5.6 opens plans and returns to booking with context', (
+    testWidgets('5.6 renders plans screen when Go to Plans tapped', (
       tester,
     ) async {
       final harness = (await tester.runAsync(
@@ -120,7 +121,11 @@ void main() {
       ))!;
       addTearDown(harness.dispose);
 
-      await tester.pumpWidget(harness.build());
+      final navigationState = NavigationState();
+
+      await tester.pumpWidget(
+        harness.build(includeNavigationState: true, navigationState: navigationState),
+      );
       await tester.pump(const Duration(milliseconds: 300));
       await _waitForButtonEnabled(
         tester,
@@ -129,14 +134,8 @@ void main() {
 
       await tester.tap(find.widgetWithText(OutlinedButton, 'Go to Plans'));
       await tester.pump(const Duration(milliseconds: 400));
-      expect(find.text('Manage your subscription'), findsOneWidget);
 
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-
-      expect(find.text('Confirm Booking'), findsOneWidget);
-      expect(find.text('Station: ${harness.station.name}'), findsOneWidget);
-      expect(find.text('Bike: #${harness.bike.id}'), findsOneWidget);
+      expect(navigationState.currentTabIndex, 1);
     });
 
     testWidgets('5.7 Property 14: displays selected station and bike', (
@@ -297,7 +296,10 @@ class _Harness {
     );
   }
 
-  Widget build() {
+  Widget build({
+    bool includeNavigationState = false,
+    NavigationState? navigationState,
+  }) {
     Widget child = MultiProvider(
       providers: [
         ChangeNotifierProvider<BookingViewModel>.value(value: bookingViewModel),
@@ -305,6 +307,13 @@ class _Harness {
       ],
       child: BookingConfirmationScreen(station: station, bike: bike),
     );
+
+    if (includeNavigationState) {
+      child = ChangeNotifierProvider<NavigationState>.value(
+        value: navigationState ?? NavigationState(),
+        child: child,
+      );
+    }
 
     return MaterialApp(home: child);
   }

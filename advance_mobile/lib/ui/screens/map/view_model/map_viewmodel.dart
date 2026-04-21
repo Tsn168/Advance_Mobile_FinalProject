@@ -12,6 +12,8 @@ class MapViewModel extends ChangeNotifier {
   MapViewModel(this._stationRepository);
 
   final IStationRepository _stationRepository;
+  
+  String? get selectedStationId => _selectedStation?.id;
 
   AppState _state = AppState.idle;
   String? _errorMessage;
