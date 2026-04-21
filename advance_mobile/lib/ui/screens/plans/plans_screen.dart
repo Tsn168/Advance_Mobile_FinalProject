@@ -16,28 +16,79 @@ class PlansScreen extends StatefulWidget {
 }
 
 class _PlansScreenState extends State<PlansScreen> {
+  static const List<_PassOption> _passOptions = [
+    _PassOption(
+      type: PassType.day,
+      badgeText: 'QUICK START',
+      badgeColor: Color(0xFF2196F3),
+      description:
+          '24 hours validity. Perfect for visitors and spontaneous city exploration.',
+      displayPrice: 5.00,
+    ),
+    _PassOption(
+      type: PassType.monthly,
+      badgeText: 'BEST VALUE',
+      badgeColor: Color(0xFFFF9800),
+      description:
+          '30 days validity. Unlimited 60-minute rides for daily commuters and locals.',
+      displayPrice: 25.00,
+    ),
+    _PassOption(
+      type: PassType.annual,
+      badgeText: 'BEST IDEA',
+      badgeColor: Color(0xFFFFC107),
+      description:
+          '365 days validity. The ultimate commitment to green mobility and health.',
+      displayPrice: 150.00,
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Consumer<PassViewModel>(
       builder: (context, passViewModel, _) {
+        final hasActivePass = passViewModel.hasActivePass;
+
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Subscription Plans'),
+            leading: IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.menu),
+            ),
+            title: const Text(
+              'KINETIC',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             centerTitle: true,
+            actions: const [
+              Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Color(0xFFE3F2FD),
+                  child: Icon(Icons.person, size: 18, color: Color(0xFF2196F3)),
+                ),
+              ),
+            ],
           ),
           body: RefreshIndicator(
-            onRefresh: passViewModel.loadAvailablePasses,
+            onRefresh: () async {
+              await Future.wait([
+                passViewModel.loadAvailablePasses(),
+                passViewModel.loadUserPasses(),
+              ]);
+            },
             child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(16),
               children: [
                 const Text(
-                  'Choose Your Plan',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  'Manage your subscription',
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: 8),
                 const Text(
-                  'All plan logic is managed by PassViewModel (MVVM).',
-                  style: TextStyle(color: AppColors.grey600, fontSize: 14),
+                  'Fuel your momentum with flexible access to our fleet.',
+                  style: TextStyle(color: Color(0xFF607D8B), fontSize: 14),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 if (passViewModel.state == AppState.loading)
@@ -57,18 +108,58 @@ class _PlansScreenState extends State<PlansScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: 16),
+                ],
+                if (passViewModel.state == AppState.loading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else ..._passOptions.map((option) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: PassCard(
+                      passType: option.type,
+                      badgeText: option.badgeText,
+                      badgeColor: option.badgeColor,
+                      description: option.description,
+                      displayPrice: option.displayPrice,
+                      isSelected: passViewModel.selectedPassType == option.type,
+                      isChooseEnabled: !hasActivePass,
+                      onChoose: () => _purchasePass(context, option.type),
+                    ),
+                  );
+                }),
+                if (hasActivePass)
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _purchaseSelectedPlan(context),
-                      icon: const Icon(Icons.shopping_cart_checkout),
-                      label: const Text('Purchase Selected Plan'),
+                    child: OutlinedButton(
+                      onPressed: () => _showCurrentPlanDetails(context, passViewModel),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF673AB7),
+                        side: const BorderSide(color: Color(0xFF673AB7), width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        'MANAGE YOUR CURRENT PLAN',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                if (passViewModel.state == AppState.error &&
+                    passViewModel.errorMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    passViewModel.errorMessage!,
+                    style: const TextStyle(
+                      color: Color(0xFFD32F2F),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
-                const SizedBox(height: AppSpacing.huge),
-                _buildCurrentPassSection(passViewModel),
               ],
             ),
           ),
@@ -125,6 +216,7 @@ class _PlansScreenState extends State<PlansScreen> {
   Future<void> _purchaseSelectedPlan(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     final passViewModel = context.read<PassViewModel>();
+    passViewModel.selectPassType(passType);
     final success = await passViewModel.purchaseSelectedPass();
 
     if (!mounted) {
@@ -133,9 +225,9 @@ class _PlansScreenState extends State<PlansScreen> {
 
     if (success) {
       messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Pass purchased successfully'),
-          backgroundColor: AppColors.success,
+        SnackBar(
+          content: Text('${passType.displayName} purchased successfully'),
+          backgroundColor: const Color(0xFF2E7D32),
         ),
       );
       return;
@@ -143,7 +235,7 @@ class _PlansScreenState extends State<PlansScreen> {
 
     final message = passViewModel.errorMessage ?? 'Purchase failed';
     messenger.showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.error),
+      SnackBar(content: Text(message), backgroundColor: const Color(0xFFD32F2F)),
     );
   }
 }

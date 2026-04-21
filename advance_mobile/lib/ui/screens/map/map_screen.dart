@@ -3,36 +3,59 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
-import '../../../model/bike/bike.dart';
 import '../../../model/station/station.dart';
+import '../../../service_locator.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
-import 'view_model/bike_viewmodel.dart';
-import '../home/view_model/booking_viewmodel.dart';
+import '../../widgets/station_bottom_sheet.dart';
+import '../../widgets/station_marker.dart';
 import '../station_detail/station_detail_screen.dart';
+import '../station_detail/view_model/station_detail_view_model.dart';
 import 'view_model/map_viewmodel.dart';
 import '../../../widgets/station/station_card.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key, required this.onNavigateToPlans});
+  const MapScreen({
+    super.key,
+    required this.onNavigateToPlans,
+    this.showMapWidget = true,
+  });
 
   final VoidCallback onNavigateToPlans;
+  final bool showMapWidget;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
 }
 
 class _MapScreenState extends State<MapScreen> {
+  String? _selectedStationId;
+
   @override
   Widget build(BuildContext context) {
-    return Consumer3<MapViewModel, BikeViewModel, BookingViewModel>(
-      builder: (context, mapViewModel, bikeViewModel, bookingViewModel, _) {
+    return Consumer<MapViewModel>(
+      builder: (context, mapViewModel, _) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Find Stations'),
+            leading: IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.menu),
+            ),
+            title: const Text(
+              'KINETIC',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             centerTitle: true,
             actions: [
+              const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Color(0xFFE3F2FD),
+                  child: Icon(Icons.person, size: 18, color: AppColors.primary),
+                ),
+              ),
               IconButton(
                 onPressed: mapViewModel.refreshStations,
                 icon: const Icon(Icons.refresh_rounded),
@@ -50,12 +73,7 @@ class _MapScreenState extends State<MapScreen> {
                 _buildGoogleMap(mapViewModel),
                 const SizedBox(height: AppSpacing.md),
                 Expanded(
-                  child: _buildStationList(
-                    context,
-                    mapViewModel,
-                    bikeViewModel,
-                    bookingViewModel,
-                  ),
+                  child: _buildStationMarkers(context, mapViewModel),
                 ),
               ],
             ),
@@ -128,7 +146,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget _buildGoogleMap(MapViewModel mapViewModel) {
-    if (mapViewModel.stations.isEmpty) {
+    if (!widget.showMapWidget || mapViewModel.stations.isEmpty) {
       return _buildMapPlaceholder();
     }
 
@@ -146,14 +164,38 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: GoogleMap(
-        initialCameraPosition: mapViewModel.initialCameraPosition,
-        onMapCreated: mapViewModel.onMapCreated,
-        markers: mapViewModel.markers,
-        mapToolbarEnabled: false,
-        zoomControlsEnabled: false,
-        myLocationEnabled: false,
-        myLocationButtonEnabled: false,
+      child: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: mapViewModel.initialCameraPosition,
+            onMapCreated: mapViewModel.onMapCreated,
+            markers: mapViewModel.markers,
+            mapToolbarEnabled: false,
+            zoomControlsEnabled: false,
+            myLocationEnabled: false,
+            myLocationButtonEnabled: false,
+          ),
+          Positioned(
+            left: 12,
+            right: 12,
+            top: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Find your nearest station',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF455A64),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -180,12 +222,12 @@ class _MapScreenState extends State<MapScreen> {
             const Icon(Icons.map_rounded, size: 44, color: AppColors.white),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Live Station Overview',
+              'Station Overview',
               style: AppTextStyles.h5.copyWith(color: AppColors.white),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Map will appear after stations load',
+              'Find your nearest station',
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.white.withValues(alpha: 0.86),
               ),
@@ -196,11 +238,9 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _buildStationList(
+  Widget _buildStationMarkers(
     BuildContext context,
     MapViewModel mapViewModel,
-    BikeViewModel bikeViewModel,
-    BookingViewModel bookingViewModel,
   ) {
     if (mapViewModel.state == AppState.loading) {
       return const Center(child: CircularProgressIndicator());
@@ -314,8 +354,8 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ],
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -326,54 +366,36 @@ class _MapScreenState extends State<MapScreen> {
   ) async {
     final messenger = ScaffoldMessenger.of(context);
 
-    final availableBikes = bikeViewModel.availableBikes;
-    if (availableBikes.isEmpty) {
-      if (!mounted) {
-        return;
-      }
-      messenger.showSnackBar(
-        const SnackBar(content: Text('No available bikes at this station')),
-      );
+  Future<void> _openStationDetail() async {
+    final stationId = _selectedStationId;
+    if (stationId == null) {
       return;
     }
-
-    final bike = availableBikes.first;
-    final success = await bookingViewModel.bookBike(
-      bikeId: bike.id,
-      stationId: station.id,
-      slotNumber: bike.slotNumber,
-    );
 
     if (!mounted) {
       return;
     }
 
-    if (success) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('Booked bike ${bike.id} at ${station.name}'),
-          backgroundColor: AppColors.success,
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider<StationDetailViewModel>(
+          create: (_) => getIt<StationDetailViewModel>(),
+          child: StationDetailScreen(stationId: stationId),
         ),
-      );
-      return;
-    }
-
-    if (bookingViewModel.flowStatus ==
-        BookingFlowStatus.requiresPassSelection) {
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Active pass required. Redirecting to Plans tab...'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      widget.onNavigateToPlans();
-      bookingViewModel.clearBookingPrompt();
-      return;
-    }
-
-    final message = bookingViewModel.errorMessage ?? 'Booking failed';
-    messenger.showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.error),
+      ),
     );
+  }
+
+  Station? _findStationById(List<Station> stations, String? stationId) {
+    if (stationId == null) {
+      return null;
+    }
+
+    for (final station in stations) {
+      if (station.id == stationId) {
+        return station;
+      }
+    }
+    return null;
   }
 }

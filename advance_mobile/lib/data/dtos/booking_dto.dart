@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../model/booking/booking.dart';
 
 /// Booking DTO - Data Transfer Object for Booking
@@ -107,9 +105,6 @@ class BookingDTO {
   static DateTime? _parseDateTime(dynamic value) {
     if (value == null) {
       return null;
-    }
-    if (value is Timestamp) {
-      return value.toDate();
     }
     if (value is DateTime) {
       return value;

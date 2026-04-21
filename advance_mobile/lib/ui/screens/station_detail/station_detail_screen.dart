@@ -26,26 +26,54 @@ class StationDetailScreen extends StatefulWidget {
 }
 
 class _StationDetailScreenState extends State<StationDetailScreen> {
-  late final StationDetailViewModel _viewModel;
+  StationDetailViewModel? _viewModel;
+  var _ownsViewModel = false;
+  var _hasRequestedInitialLoad = false;
 
   @override
-  void initState() {
-    super.initState();
-    _viewModel = getIt<StationDetailViewModel>();
-    _viewModel.loadStationDetails(widget.stationId);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_viewModel != null) {
+      return;
+    }
+
+    final provided = context.read<StationDetailViewModel?>();
+    if (provided != null) {
+      _viewModel = provided;
+      _ownsViewModel = false;
+    } else {
+      _viewModel = getIt<StationDetailViewModel>();
+      _ownsViewModel = true;
+    }
+
+    if (!_hasRequestedInitialLoad) {
+      _hasRequestedInitialLoad = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _viewModel?.loadStationDetails(widget.stationId);
+      });
+    }
   }
 
   @override
   void dispose() {
-    _viewModel.dispose();
+    if (_ownsViewModel) {
+      _viewModel?.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<StationDetailViewModel>.value(
-      value: _viewModel,
-      child: Consumer<StationDetailViewModel>(
+    final viewModel = _viewModel;
+    if (viewModel == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final screen = Consumer<StationDetailViewModel>(
         builder: (context, viewModel, _) {
           return Scaffold(
             appBar: AppBar(
@@ -108,8 +136,16 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
             ),
           );
         },
-      ),
     );
+
+    if (_ownsViewModel) {
+      return ChangeNotifierProvider<StationDetailViewModel>.value(
+        value: viewModel,
+        child: screen,
+      );
+    }
+
+    return screen;
   }
 
   Widget _buildBody(BuildContext context, StationDetailViewModel viewModel) {
@@ -220,9 +256,6 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
     }
 
     entries.sort((a, b) {
-      final bikeA = a.bike;
-      final bikeB = b.bike;
-
       int rank(_SlotEntry e) {
         if (e.bike == null) {
           return 2;
