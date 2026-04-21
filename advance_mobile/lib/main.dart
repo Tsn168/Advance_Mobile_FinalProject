@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import 'config/app_env.dart';
 import 'service_locator.dart';
-import 'services/firebase_service.dart';
 import 'services/google_maps_js_loader.dart';
 import 'ui/theme/app_theme.dart';
 import 'ui/screens/home/view_model/booking_viewmodel.dart';
@@ -21,7 +20,9 @@ import 'ui/screens/profile/profile_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppEnv.load();
-  await FirebaseService.initialize();
+  // Firebase initialization disabled for UI development.
+  // ELITE team will configure and enable this when backend is ready.
+  // await FirebaseService.initialize();
   await ensureGoogleMapsJsLoaded(apiKey: AppEnv.googleMapsApiKey);
   await setupServiceLocator();
   runApp(const MyApp());
