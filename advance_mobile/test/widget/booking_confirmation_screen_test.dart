@@ -1,8 +1,6 @@
-import 'package:advance_mobile/data/repositories/bike/bike_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/booking/booking_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/mock_data_store.dart';
 import 'package:advance_mobile/data/repositories/pass/pass_repository_mock.dart';
-import 'package:advance_mobile/data/repositories/station/station_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/user/user_repository_mock.dart';
 import 'package:advance_mobile/model/bike/bike.dart';
 import 'package:advance_mobile/model/pass/pass.dart';
@@ -265,15 +263,8 @@ class _Harness {
 
     final passRepository = MockPassRepository(store);
     final bookingRepository = MockBookingRepository(store);
-    final bikeRepository = MockBikeRepository(store);
-    final stationRepository = MockStationRepository(store);
 
-    final bookingViewModel = BookingViewModel(
-      bookingRepository,
-      passRepository,
-      bikeRepository,
-      stationRepository,
-    );
+    final bookingViewModel = BookingViewModel(bookingRepository, passRepository);
     final passViewModel = PassViewModel(passRepository, MockUserRepository(store));
 
     await bookingViewModel.initialize(userId: userId);
