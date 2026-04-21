@@ -11,6 +11,7 @@ import 'data/repositories/mock_data_store.dart';
 import 'data/repositories/pass/pass_repository.dart';
 import 'data/repositories/pass/pass_repository_firebase.dart';
 import 'data/repositories/pass/pass_repository_mock.dart';
+import 'services/error_handler.dart';
 import 'data/repositories/station/station_repository.dart';
 import 'data/repositories/station/station_repository_firebase.dart';
 import 'data/repositories/station/station_repository_mock.dart';
@@ -41,6 +42,12 @@ Future<void> setupServiceLocator() async {
   getIt.registerLazySingleton<MockDataStore>(() => MockDataStore());
   getIt.registerLazySingleton<AppState>(() => AppState());
   getIt.registerLazySingleton<NavigationState>(() => NavigationState());
+
+  // Local Storage Service (Async initialization)
+  final sharedPrefs = await SharedPreferences.getInstance();
+  getIt.registerSingleton<LocalStorageService>(
+    LocalStorageService(sharedPrefs),
+  );
 
   if (useFirebaseRepositories) {
     getIt.registerLazySingleton<IPassRepository>(() => PassRepositoryFirebase());

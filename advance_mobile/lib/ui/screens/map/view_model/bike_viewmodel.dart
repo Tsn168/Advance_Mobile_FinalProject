@@ -73,7 +73,7 @@ class BikeViewModel extends ChangeNotifier {
       _state = AppState.success;
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     notifyListeners();
   }

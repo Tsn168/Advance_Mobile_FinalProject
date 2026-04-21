@@ -143,7 +143,7 @@ class PassViewModel extends ChangeNotifier {
       return true;
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       notifyListeners();
       return false;
     }
