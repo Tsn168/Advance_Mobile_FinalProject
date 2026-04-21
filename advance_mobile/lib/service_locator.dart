@@ -19,7 +19,7 @@ import 'data/repositories/user/user_repository.dart';
 import 'data/repositories/user/user_repository_firebase.dart';
 import 'data/repositories/user/user_repository_mock.dart';
 import 'services/firebase_service.dart';
-import 'ui/screens/home/view_model/booking_viewmodel.dart';
+import 'ui/screens/map/view_model/booking_viewmodel.dart';
 import 'ui/screens/map/view_model/bike_viewmodel.dart';
 import 'ui/screens/map/view_model/map_viewmodel.dart';
 import 'ui/screens/plans/view_model/pass_viewmodel.dart';
@@ -41,7 +41,7 @@ Future<void> setupServiceLocator() async {
   final useFirebaseRepositories = FirebaseService.canUseFirebaseRepositories;
 
   getIt.registerLazySingleton<MockDataStore>(() => MockDataStore());
-  getIt.registerLazySingleton<AppState>(() => AppState());
+  getIt.registerLazySingleton<GlobalAppState>(() => GlobalAppState());
   getIt.registerLazySingleton<NavigationState>(() => NavigationState());
 
   // Local Storage Service (Async initialization)

@@ -6,6 +6,7 @@ import '../../../model/pass/pass.dart' as model_pass;
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../../widgets/subscription/subscription_card.dart';
+import '../../widgets/pass_card.dart';
 import 'view_model/pass_viewmodel.dart';
 
 class PlansScreen extends StatefulWidget {
@@ -18,7 +19,7 @@ class PlansScreen extends StatefulWidget {
 class _PlansScreenState extends State<PlansScreen> {
   static const List<_PassOption> _passOptions = [
     _PassOption(
-      type: PassType.day,
+      type: model_pass.PassType.day,
       badgeText: 'QUICK START',
       badgeColor: Color(0xFF2196F3),
       description:
@@ -26,7 +27,7 @@ class _PlansScreenState extends State<PlansScreen> {
       displayPrice: 5.00,
     ),
     _PassOption(
-      type: PassType.monthly,
+      type: model_pass.PassType.monthly,
       badgeText: 'BEST VALUE',
       badgeColor: Color(0xFFFF9800),
       description:
@@ -34,7 +35,7 @@ class _PlansScreenState extends State<PlansScreen> {
       displayPrice: 25.00,
     ),
     _PassOption(
-      type: PassType.annual,
+      type: model_pass.PassType.annual,
       badgeText: 'BEST IDEA',
       badgeColor: Color(0xFFFFC107),
       description:
@@ -91,31 +92,15 @@ class _PlansScreenState extends State<PlansScreen> {
                   style: TextStyle(color: Color(0xFF607D8B), fontSize: 14),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                if (passViewModel.state == AppState.loading)
-                  const Center(child: CircularProgressIndicator())
-                else ...[
-                  ...model_pass.PassType.values.map(
-                    (type) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: SubscriptionCard(
-                        passType: _mapPassType(type),
-                        price: type.price,
-                        originalPrice: '',
-                        description: 'Enjoy unlimited rides for ${type.durationDays} day(s).',
-                        isActive: passViewModel.selectedPassType == type,
-                        isPopular: type == model_pass.PassType.monthly,
-                        onChoose: () => passViewModel.selectPassType(type),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                
+                // Active Pass Section (if any)
+                if (hasActivePass) ...[
+                  _buildCurrentPassSection(passViewModel),
+                  const SizedBox(height: 24),
                 ],
-                if (passViewModel.state == AppState.loading)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else ..._passOptions.map((option) {
+
+                // Grid/List of Pass Options
+                ..._passOptions.map((option) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: PassCard(
@@ -130,6 +115,7 @@ class _PlansScreenState extends State<PlansScreen> {
                     ),
                   );
                 }),
+
                 if (hasActivePass)
                   SizedBox(
                     width: double.infinity,
@@ -149,6 +135,7 @@ class _PlansScreenState extends State<PlansScreen> {
                       ),
                     ),
                   ),
+
                 if (passViewModel.state == AppState.error &&
                     passViewModel.errorMessage != null) ...[
                   const SizedBox(height: 12),
@@ -172,70 +159,146 @@ class _PlansScreenState extends State<PlansScreen> {
     final activePass = passViewModel.activePass;
 
     return Card(
-      color: AppColors.primary.withValues(alpha: 0.08),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.2)),
+      ),
+      color: AppColors.primary.withValues(alpha: 0.05),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            const Text(
-              'Your Current Plan',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            if (activePass == null)
-              const Text('No active plan yet.')
-            else ...[
-              Text(activePass.type.displayName),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Remaining ${activePass.remainingDays} day(s)',
-                style: const TextStyle(
-                  color: AppColors.success,
-                  fontWeight: FontWeight.w500,
-                ),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
-            ],
+              child: const Icon(Icons.check_circle, color: AppColors.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Active Subscription',
+                    style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                  ),
+                  Text(
+                    activePass?.type.displayName ?? 'Standard Pass',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  if (activePass != null) ...[
+                     const SizedBox(height: 4),
+                     Text(
+                      'Expires in ${activePass.expiryDate.difference(DateTime.now()).inDays} days',
+                      style: const TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  PassType _mapPassType(model_pass.PassType type) {
-    switch (type) {
-      case model_pass.PassType.monthly:
-        return PassType.monthly;
-      case model_pass.PassType.annual:
-        return PassType.annual;
-      default:
-        return PassType.day;
-    }
-  }
-
-  Future<void> _purchaseSelectedPlan(BuildContext context) async {
+  Future<void> _purchasePass(BuildContext context, model_pass.PassType type) async {
     final messenger = ScaffoldMessenger.of(context);
     final passViewModel = context.read<PassViewModel>();
-    passViewModel.selectPassType(passType);
+    
+    passViewModel.selectPassType(type);
     final success = await passViewModel.purchaseSelectedPass();
 
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
 
     if (success) {
       messenger.showSnackBar(
         SnackBar(
-          content: Text('${passType.displayName} purchased successfully'),
-          backgroundColor: const Color(0xFF2E7D32),
+          content: Text('${type.displayName} purchased successfully!'),
+          backgroundColor: AppColors.success,
         ),
       );
-      return;
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(passViewModel.errorMessage ?? 'Purchase failed'),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
+  }
 
-    final message = passViewModel.errorMessage ?? 'Purchase failed';
-    messenger.showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: const Color(0xFFD32F2F)),
+  void _showCurrentPlanDetails(BuildContext context, PassViewModel passViewModel) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final activePass = passViewModel.activePass;
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Plan Details',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              _buildDetailRow('Type', activePass?.type.displayName ?? 'N/A'),
+              _buildDetailRow('Purchased', activePass?.startDate.toString().split(' ')[0] ?? 'N/A'),
+              _buildDetailRow('Expiry', activePass?.expiryDate.toString().split(' ')[0] ?? 'N/A'),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Close'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: AppColors.grey600)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
+
+class _PassOption {
+  final model_pass.PassType type;
+  final String badgeText;
+  final Color badgeColor;
+  final String description;
+  final double displayPrice;
+
+  const _PassOption({
+    required this.type,
+    required this.badgeText,
+    required this.badgeColor,
+    required this.description,
+    required this.displayPrice,
+  });
 }

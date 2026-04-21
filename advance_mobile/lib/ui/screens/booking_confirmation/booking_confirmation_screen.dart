@@ -5,7 +5,7 @@ import '../../../config/app_constants.dart';
 import '../../../model/bike/bike.dart';
 import '../../../model/station/station.dart';
 import '../../states/navigation_state.dart';
-import '../home/view_model/booking_viewmodel.dart';
+import '../map/view_model/booking_viewmodel.dart';
 import '../plans/plans_screen.dart';
 import '../plans/view_model/pass_viewmodel.dart';
 import '../../../widgets/common/custom_card.dart';

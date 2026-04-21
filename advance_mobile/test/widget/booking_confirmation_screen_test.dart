@@ -6,7 +6,7 @@ import 'package:advance_mobile/model/bike/bike.dart';
 import 'package:advance_mobile/model/pass/pass.dart';
 import 'package:advance_mobile/model/station/station.dart';
 import 'package:advance_mobile/ui/screens/booking_confirmation/booking_confirmation_screen.dart';
-import 'package:advance_mobile/ui/screens/home/view_model/booking_viewmodel.dart';
+import 'package:advance_mobile/ui/screens/map/view_model/booking_viewmodel.dart';
 import 'package:advance_mobile/ui/screens/plans/view_model/pass_viewmodel.dart';
 import 'package:advance_mobile/ui/states/navigation_state.dart';
 import 'package:flutter/material.dart';
@@ -135,7 +135,7 @@ void main() {
       await tester.tap(find.widgetWithText(OutlinedButton, 'Go to Plans'));
       await tester.pump(const Duration(milliseconds: 400));
 
-      expect(navigationState.currentTabIndex, 2);
+      expect(navigationState.currentTabIndex, 1);
     });
 
     testWidgets('5.7 Property 14: displays selected station and bike', (

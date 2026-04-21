@@ -5,7 +5,7 @@ import 'config/app_env.dart';
 import 'service_locator.dart';
 import 'services/google_maps_js_loader.dart';
 import 'ui/theme/app_theme.dart';
-import 'ui/screens/home/view_model/booking_viewmodel.dart';
+import 'ui/screens/map/view_model/booking_viewmodel.dart';
 import 'ui/screens/map/view_model/bike_viewmodel.dart';
 import 'ui/screens/map/view_model/map_viewmodel.dart';
 import 'ui/screens/plans/view_model/pass_viewmodel.dart';
@@ -13,7 +13,6 @@ import 'ui/screens/profile/view_model/profile_viewmodel.dart';
 import 'ui/states/app_state.dart';
 import 'ui/states/navigation_state.dart';
 import 'ui/screens/splash/prelaunch_splash_screen.dart';
-import 'ui/screens/home/home_screen.dart';
 import 'ui/screens/map/map_screen.dart';
 import 'ui/screens/plans/plans_screen.dart';
 import 'ui/screens/profile/profile_screen.dart';
@@ -37,7 +36,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // Global States (shared across entire app)
-        ChangeNotifierProvider(create: (_) => getIt<AppState>()),
+        ChangeNotifierProvider(create: (_) => getIt<GlobalAppState>()),
         ChangeNotifierProvider(create: (_) => getIt<NavigationState>()),
         // Feature ViewModels
         ChangeNotifierProvider(
@@ -54,10 +53,16 @@ class MyApp extends StatelessWidget {
           create: (_) => getIt<ProfileViewModel>()..initialize('user_reyu'),
         ),
       ],
-      child: MaterialApp(
-        title: 'Bike Sharing App',
-        theme: AppTheme.lightTheme,
-        home: const PrelaunchSplashScreen(nextScreen: MainNavigationScreen()),
+      child: Consumer<GlobalAppState>(
+        builder: (context, appState, _) {
+          return MaterialApp(
+            title: 'Bike Sharing App',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: appState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            home: PrelaunchSplashScreen(nextScreen: MainNavigationScreen()),
+          );
+        },
       ),
     );
   }
@@ -74,10 +79,6 @@ class MainNavigationScreen extends StatelessWidget {
       body: IndexedStack(
         index: navigationState.currentTabIndex,
         children: [
-          HomeScreen(
-            onNavigateToMap: () => navigationState.goToMap(),
-            onNavigateToPlans: () => navigationState.goToPlans(),
-          ),
           MapScreen(onNavigateToPlans: () => navigationState.goToPlans()),
           const PlansScreen(),
           const ProfileScreen(),
@@ -88,7 +89,6 @@ class MainNavigationScreen extends StatelessWidget {
         onTap: navigationState.setTab,
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
           BottomNavigationBarItem(
             icon: Icon(Icons.card_membership),

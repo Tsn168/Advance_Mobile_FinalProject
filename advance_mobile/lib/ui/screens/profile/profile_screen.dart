@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
+import '../../states/app_state.dart';
 import 'view_model/profile_viewmodel.dart';
 import 'widgets/activity_graph.dart';
 import 'widgets/subscription_card.dart';
@@ -79,23 +80,12 @@ class ProfileScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         _buildSettingsCard([
                           _SettingsTile(
-                            icon: Icons.person_outline,
-                            title: 'Edit Profile',
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Edit Profile coming soon')),
-                              );
-                            },
-                          ),
-                          _SettingsTile(
                             icon: Icons.dark_mode_outlined,
                             title: 'Dark Mode',
                             trailing: Switch(
-                              value: false, // Static for now as requested to avoid too many changes
+                              value: context.watch<GlobalAppState>().isDarkMode,
                               onChanged: (value) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Dark Mode integration in progress')),
-                                );
+                                context.read<GlobalAppState>().toggleDarkMode();
                               },
                             ),
                           ),

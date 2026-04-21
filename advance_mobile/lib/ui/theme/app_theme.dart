@@ -217,4 +217,78 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.primary,
+        secondary: AppColors.accent,
+        surface: AppColors.grey900,
+        error: AppColors.error,
+        onPrimary: AppColors.white,
+        onSecondary: AppColors.white,
+        onSurface: AppColors.white,
+      ),
+      textTheme: TextTheme(
+        headlineLarge: AppTextStyles.h1.copyWith(color: AppColors.white),
+        headlineMedium: AppTextStyles.h2.copyWith(color: AppColors.white),
+        headlineSmall: AppTextStyles.h3.copyWith(color: AppColors.white),
+        titleLarge: AppTextStyles.h4.copyWith(color: AppColors.white),
+        titleMedium: AppTextStyles.h5.copyWith(color: AppColors.white),
+        bodyLarge: AppTextStyles.bodyLarge.copyWith(color: AppColors.white),
+        bodyMedium: AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
+        bodySmall: AppTextStyles.bodySmall.copyWith(color: AppColors.grey300),
+        labelLarge: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
+        labelMedium: AppTextStyles.labelMedium.copyWith(color: AppColors.white),
+        labelSmall: AppTextStyles.labelSmall.copyWith(color: AppColors.grey400),
+      ),
+      scaffoldBackgroundColor: AppColors.black,
+
+      // AppBar
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.black,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: AppColors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        titleTextStyle: AppTextStyles.h4.copyWith(color: AppColors.white),
+      ),
+
+      // Card Theme
+      cardTheme: CardThemeData(
+        color: AppColors.grey900,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
+          side: const BorderSide(color: AppColors.grey800),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+
+      // Bottom Navigation Bar Theme
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: AppColors.grey900,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.grey500,
+        elevation: 2,
+        type: BottomNavigationBarType.fixed,
+        showUnselectedLabels: true,
+      ),
+
+      // Outlined Button
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.white,
+          side: const BorderSide(color: AppColors.grey700),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+          ),
+        ),
+      ),
+    );
+  }
 }

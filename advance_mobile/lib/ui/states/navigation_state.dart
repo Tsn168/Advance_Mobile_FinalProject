@@ -13,8 +13,7 @@ class NavigationState extends ChangeNotifier {
     }
   }
 
-  void goToHome() => setTab(0);
-  void goToMap() => setTab(1);
-  void goToPlans() => setTab(2);
-  void goToProfile() => setTab(3);
+  void goToMap() => setTab(0);
+  void goToPlans() => setTab(1);
+  void goToProfile() => setTab(2);
 }

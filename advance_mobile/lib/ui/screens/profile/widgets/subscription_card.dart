@@ -40,88 +40,114 @@ class SubscriptionCard extends StatelessWidget {
       );
     }
 
-    final isExpiringSoon = activePass!.expiryDate.difference(DateTime.now()).inDays < 3;
+    return _buildActivePass(activePass!);
+  }
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [Colors.blue.shade600, Colors.blue.shade800],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+  Widget _buildActivePass(Pass pass) {
+    // Calculate progress (time-based)
+    final totalDays = pass.type.durationDays;
+    final remainingDays = pass.remainingDays;
+    final elapsedDays = totalDays - remainingDays;
+    // Ensure we don't divide by zero and clamp between 0.0 and 1.0
+    final progress = totalDays > 0 
+        ? (elapsedDays / totalDays).clamp(0.0, 1.0) 
+        : 1.0;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2196F3).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFF2196F3).withValues(alpha: 0.2),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    activePass!.type.name.toUpperCase(),
+                    pass.type.displayName,
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
+                      color: Color(0xFF1976D2),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'ACTIVE',
-                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Active until ${pass.expiryDate.day}/${pass.expiryDate.month}/${pass.expiryDate.year}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.blue.shade700,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                '${activePass!.type.displayName} Pass',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4CAF50),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'VALID UNTIL',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10),
-                      ),
-                      Text(
-                        _formatDate(activePass!.expiryDate),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                child: const Text(
+                  'ACTIVE',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
-                  if (isExpiringSoon)
-                    const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
-                ],
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$remainingDays days left',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1976D2),
+                ),
+              ),
+              Text(
+                '${(progress * 100).toInt()}% used',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.blue.shade600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.blue.shade100,
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2196F3)),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '${pass.ridesUsed} rides taken with this pass',
+            style: TextStyle(
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+              color: Colors.blue.shade600,
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 }

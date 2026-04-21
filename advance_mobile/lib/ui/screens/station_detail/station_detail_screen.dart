@@ -9,7 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../../widgets/bike/bike_card.dart';
 import '../booking_confirmation/booking_confirmation_screen.dart';
-import '../home/view_model/booking_viewmodel.dart';
+import '../map/view_model/booking_viewmodel.dart';
 import '../plans/view_model/pass_viewmodel.dart';
 import 'view_model/station_detail_view_model.dart';
 

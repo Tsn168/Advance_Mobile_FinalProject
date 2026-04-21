@@ -1,7 +1,7 @@
 import 'package:advance_mobile/data/repositories/booking/booking_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/mock_data_store.dart';
 import 'package:advance_mobile/data/repositories/pass/pass_repository_mock.dart';
-import 'package:advance_mobile/ui/screens/home/view_model/booking_viewmodel.dart';
+import 'package:advance_mobile/ui/screens/map/view_model/booking_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
