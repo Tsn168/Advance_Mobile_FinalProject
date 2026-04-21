@@ -18,10 +18,12 @@ class BookingConfirmationScreen extends StatefulWidget {
     super.key,
     required this.station,
     required this.bike,
+    this.onBikeUnavailable,
   });
 
   final Station station;
   final Bike bike;
+  final VoidCallback? onBikeUnavailable;
 
   @override
   State<BookingConfirmationScreen> createState() =>
@@ -278,6 +280,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         );
 
         if (isRaceCondition && Navigator.of(context).canPop()) {
+          widget.onBikeUnavailable?.call();
           Navigator.of(context).pop();
         }
       }
