@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../model/user/user.dart';
 
 /// User DTO - Data Transfer Object for User
@@ -56,16 +58,9 @@ class UserDTO {
       phoneNumber: map['phoneNumber'],
       profileImageUrl: map['profileImageUrl'],
       activePassId: map['activePassId'],
-      createdAt: map['createdAt'] is DateTime
-          ? map['createdAt']
-          : DateTime.parse(
-              map['createdAt'] ?? DateTime.now().toIso8601String(),
-            ),
-      updatedAt: map['updatedAt'] is DateTime
-          ? map['updatedAt']
-          : map['updatedAt'] != null
-          ? DateTime.parse(map['updatedAt'])
-          : null,
+      createdAt:
+          _parseDateTime(map['createdAt'])?.toUtc() ?? DateTime.now().toUtc(),
+      updatedAt: _parseDateTime(map['updatedAt'])?.toUtc(),
     );
   }
 
@@ -77,8 +72,24 @@ class UserDTO {
       'phoneNumber': phoneNumber,
       'profileImageUrl': profileImageUrl,
       'activePassId': activePassId,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
+      'updatedAt': updatedAt?.toUtc().toIso8601String(),
     };
+  }
+
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    if (value is DateTime) {
+      return value;
+    }
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 }

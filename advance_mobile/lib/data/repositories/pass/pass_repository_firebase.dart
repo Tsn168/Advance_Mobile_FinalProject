@@ -1,107 +1,159 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
+
+import '../../../config/firebase_config.dart';
 import '../../../model/pass/pass.dart';
 import '../../dtos/pass_dto.dart';
 import 'pass_repository.dart';
-import '../../../config/firebase_config.dart';
 
-/// Real Firebase implementation of the Pass Repository.
 class PassRepositoryFirebase implements IPassRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  PassRepositoryFirebase({FirebaseDatabase? database})
+    : _database =
+          database ?? FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: FirebaseConfig.realtimeDatabaseUrl);
 
-  CollectionReference get _passesCollection =>
-      _firestore.collection(FirebaseConfig.passesCollection);
+  final FirebaseDatabase _database;
+
+  DatabaseReference get _passesRef => _database.ref(FirebaseConfig.passesPath);
 
   @override
-  Future<List<Pass>> getPassesByUserId(String userId) async {
-    final snapshot = await _passesCollection
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .get();
+  Future<Pass> createPass(Pass pass) async {
+    final key = pass.id.isEmpty
+        ? _passesRef.push().key
+        : pass.id;
+    if (key == null || key.isEmpty) {
+      throw Exception('Unable to generate pass ID');
+    }
 
-    return snapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      return PassDTO.fromFirebase(data).toModel();
-    }).toList();
+    final passWithId = pass.copyWith(id: key);
+    final dto = PassDTO.fromModel(passWithId);
+    await _passesRef
+        .child(key)
+        .set(dto.toFirebase())
+        .timeout(FirebaseConfig.defaultTimeout);
+    return dto.toModel();
+  }
+
+  @override
+  Future<void> deletePass(String passId) async {
+    await _passesRef.child(passId).remove().timeout(FirebaseConfig.defaultTimeout);
+  }
+
+  @override
+  Future<List<Pass>> getAllAvailablePasses() async {
+    final now = DateTime.now().toUtc();
+    return PassType.values
+        .map(
+          (type) => Pass(
+            id: 'template_${type.name}',
+            userId: '',
+            type: type,
+            startDate: now,
+            expiryDate: now.add(Duration(days: type.durationDays)),
+            isActive: false,
+            price: type.price,
+            ridesUsed: 0,
+            createdAt: now,
+          ),
+        )
+        .toList(growable: false);
   }
 
   @override
   Future<Pass?> getActivePass(String userId) async {
-    final snapshot = await _passesCollection
-        .where('userId', isEqualTo: userId)
-        .where('isActive', isEqualTo: true)
-        .limit(1)
-        .get();
+    final passes = await getPassesByUserId(userId);
+    final now = DateTime.now().toUtc();
 
-    if (snapshot.docs.isEmpty) return null;
+    final active = passes.where((pass) {
+      return pass.isActive && pass.expiryDate.toUtc().isAfter(now);
+    }).toList();
+    if (active.isEmpty) {
+      return null;
+    }
 
-    final data = snapshot.docs.first.data() as Map<String, dynamic>;
-    return PassDTO.fromFirebase(data).toModel();
+    active.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+    return active.first;
   }
 
   @override
   Future<Pass?> getPassById(String passId) async {
-    final doc = await _passesCollection.doc(passId).get();
-    if (!doc.exists) return null;
+    final event = await _passesRef
+        .child(passId)
+        .get()
+        .timeout(FirebaseConfig.defaultTimeout);
+    if (!event.exists || event.value == null) {
+      return null;
+    }
 
-    final data = doc.data() as Map<String, dynamic>;
-    return PassDTO.fromFirebase(data).toModel();
+    final map = Map<String, dynamic>.from(event.value as Map);
+    map.putIfAbsent('id', () => passId);
+    return PassDTO.fromFirebase(map).toModel();
   }
 
   @override
-  Future<Pass> createPass(Pass pass) async {
-    final docRef = _passesCollection.doc();
-    final passWithId = pass.copyWith(id: docRef.id);
-    final dto = PassDTO.fromModel(passWithId);
+  Future<List<Pass>> getPassesByUserId(String userId) async {
+    final event = await _passesRef.get().timeout(FirebaseConfig.defaultTimeout);
+    if (!event.exists || event.value == null) {
+      return <Pass>[];
+    }
 
-    await docRef.set(dto.toFirebase());
-    return passWithId;
+    final root = Map<String, dynamic>.from(event.value as Map);
+    final passes = <Pass>[];
+    root.forEach((key, value) {
+      final map = Map<String, dynamic>.from(value as Map);
+      map.putIfAbsent('id', () => key);
+      final pass = PassDTO.fromFirebase(map).toModel();
+      if (pass.userId == userId) {
+        passes.add(pass);
+      }
+    });
+
+    passes.sort((a, b) => b.startDate.compareTo(a.startDate));
+    return passes;
+  }
+
+  @override
+  Future<bool> hasActivePass(String userId) async {
+    final active = await getActivePass(userId);
+    return active != null && active.isActive && !active.isExpired;
   }
 
   @override
   Future<void> updatePass(Pass pass) async {
     final dto = PassDTO.fromModel(pass);
-    await _passesCollection.doc(pass.id).update(dto.toFirebase());
-  }
-
-  @override
-  Future<void> deletePass(String passId) async {
-    await _passesCollection.doc(passId).delete();
-  }
-
-  @override
-  Future<List<Pass>> getAllAvailablePasses() async {
-    return PassType.values
-        .map(
-          (type) => Pass(
-            id: type.name,
-            userId: '',
-            type: type,
-            startDate: DateTime.now(),
-            expiryDate: DateTime.now().add(Duration(days: type.durationDays)),
-            isActive: true,
-            price: type.price,
-          ),
-        )
-        .toList();
+    await _passesRef
+        .child(pass.id)
+        .update(dto.toFirebase())
+        .timeout(FirebaseConfig.defaultTimeout);
   }
 
   @override
   Stream<Pass?> watchActivePass(String userId) {
-    return _passesCollection
-        .where('userId', isEqualTo: userId)
-        .where('isActive', isEqualTo: true)
-        .limit(1)
-        .snapshots()
-        .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      final data = snapshot.docs.first.data() as Map<String, dynamic>;
-      return PassDTO.fromFirebase(data).toModel();
-    });
-  }
+    return _passesRef.onValue.map((event) {
+      final value = event.snapshot.value;
+      if (value == null) {
+        return null;
+      }
 
-  @override
-  Future<bool> hasActivePass(String userId) async {
-    final activePass = await getActivePass(userId);
-    return activePass != null && !activePass.isExpired;
+      final root = Map<String, dynamic>.from(value as Map);
+      final now = DateTime.now().toUtc();
+      final active = <Pass>[];
+      root.forEach((key, raw) {
+        final map = Map<String, dynamic>.from(raw as Map);
+        map.putIfAbsent('id', () => key);
+        final pass = PassDTO.fromFirebase(map).toModel();
+        if (pass.userId == userId && pass.isActive && pass.expiryDate.toUtc().isAfter(now)) {
+          active.add(pass);
+        }
+      });
+
+      if (active.isEmpty) {
+        return null;
+      }
+      active.sort((a, b) => a.expiryDate.compareTo(b.expiryDate));
+      return active.first;
+    }).handleError((Object error, StackTrace stackTrace) {
+      debugPrint('watchActivePass($userId) error: $error');
+    });
   }
 }

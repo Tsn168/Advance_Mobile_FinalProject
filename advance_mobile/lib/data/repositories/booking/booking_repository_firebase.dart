@@ -1,121 +1,42 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
+
+import '../../../config/firebase_config.dart';
+import '../../../model/bike/bike.dart';
 import '../../../model/booking/booking.dart';
 import '../../dtos/booking_dto.dart';
 import 'booking_repository.dart';
-import '../../../config/firebase_config.dart';
 
-/// Real Firebase implementation of the Booking Repository.
-/// Uses Firestore Transactions for atomic booking operations.
 class BookingRepositoryFirebase implements IBookingRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  BookingRepositoryFirebase({FirebaseDatabase? database})
+    : _database =
+          database ?? FirebaseDatabase.instanceFor(app: Firebase.app(), databaseURL: FirebaseConfig.realtimeDatabaseUrl);
 
-  CollectionReference get _bookingsCollection =>
-      _firestore.collection(FirebaseConfig.bookingsCollection);
+  final FirebaseDatabase _database;
 
-  CollectionReference get _bikesCollection =>
-      _firestore.collection(FirebaseConfig.bikesCollection);
-
-  CollectionReference get _stationsCollection =>
-      _firestore.collection(FirebaseConfig.stationsCollection);
-
-  @override
-  Future<Booking> createBooking(Booking booking) async {
-    final docRef = _bookingsCollection.doc();
-    final bookingWithId = booking.copyWith(id: docRef.id);
-    final dto = BookingDTO.fromModel(bookingWithId);
-
-    // ATOMIC TRANSACTION (US4)
-    // Ensures bike status and station count are updated safely
-    await _firestore.runTransaction((transaction) async {
-      // 1. Get Bike Doc
-      final bikeRef = _bikesCollection.doc(booking.bikeId);
-      final bikeDoc = await transaction.get(bikeRef);
-      
-      if (!bikeDoc.exists) {
-        throw FirebaseException(
-          plugin: 'cloud_firestore',
-          code: 'not-found',
-          message: 'Bike not found.',
-        );
-      }
-
-      final bikeStatus = bikeDoc.get('status') as String;
-      if (bikeStatus != 'AVAILABLE') {
-        throw FirebaseException(
-          plugin: 'cloud_firestore',
-          code: 'unavailable',
-          message: 'Bike is no longer available.',
-        );
-      }
-
-      // 2. Get Station Doc
-      final stationRef = _stationsCollection.doc(booking.stationId);
-      final stationDoc = await transaction.get(stationRef);
-
-      // 3. Update Bike Status
-      transaction.update(bikeRef, {
-        'status': 'BOOKED',
-        'updatedAt': DateTime.now().toIso8601String(),
-      });
-
-      // 4. Update Station Count
-      if (stationDoc.exists) {
-        final currentCount = stationDoc.get('availableBikes') as int;
-        transaction.update(stationRef, {
-          'availableBikes': currentCount > 0 ? currentCount - 1 : 0,
-          'lastUpdated': DateTime.now().toIso8601String(),
-        });
-      }
-
-      // 5. Create Booking
-      transaction.set(docRef, dto.toFirebase());
-    });
-
-    return bookingWithId;
-  }
+  DatabaseReference get _bookingsRef =>
+      _database.ref(FirebaseConfig.bookingsPath);
+  DatabaseReference get _bikesRef => _database.ref(FirebaseConfig.bikesPath);
+  DatabaseReference get _stationsRef =>
+      _database.ref(FirebaseConfig.stationsPath);
 
   @override
-  Future<Booking?> getBookingById(String bookingId) async {
-    final doc = await _bookingsCollection.doc(bookingId).get();
-    if (!doc.exists) return null;
-    
-    final data = doc.data() as Map<String, dynamic>;
-    return BookingDTO.fromFirebase(data).toModel();
-  }
+  Future<void> cancelBooking(String bookingId) async {
+    final booking = await getBookingById(bookingId);
+    if (booking == null) {
+      throw Exception('Booking not found: $bookingId');
+    }
 
-  @override
-  Future<List<Booking>> getBookingsByUserId(String userId) async {
-    final snapshot = await _bookingsCollection
-        .where('userId', isEqualTo: userId)
-        .orderBy('bookingDate', descending: true)
-        .get();
+    await _bookingsRef.child(bookingId).update({
+      'status': BookingStatus.cancelled.name.toUpperCase(),
+    }).timeout(FirebaseConfig.defaultTimeout);
 
-    return snapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      return BookingDTO.fromFirebase(data).toModel();
-    }).toList();
-  }
+    await _bikesRef.child(booking.bikeId).update({
+      'status': BikeStatus.available.name.toUpperCase(),
+    }).timeout(FirebaseConfig.defaultTimeout);
 
-  @override
-  Future<Booking?> getActiveBookingByUserId(String userId) async {
-    final snapshot = await _bookingsCollection
-        .where('userId', isEqualTo: userId)
-        .where('status', isEqualTo: 'ACTIVE')
-        .limit(1)
-        .get();
-
-    if (snapshot.docs.isEmpty) return null;
-    
-    final data = snapshot.docs.first.data() as Map<String, dynamic>;
-    return BookingDTO.fromFirebase(data).toModel();
-  }
-
-  @override
-  Future<void> updateBookingStatus(String bookingId, BookingStatus status) async {
-    await _bookingsCollection.doc(bookingId).update({
-      'status': status.name.toUpperCase(),
-      'updatedAt': DateTime.now().toIso8601String(),
-    });
+    await _syncStationAvailability(booking.stationId);
   }
 
   @override
@@ -126,94 +47,205 @@ class BookingRepositoryFirebase implements IBookingRepository {
     required int rideDuration,
   }) async {
     final booking = await getBookingById(bookingId);
-    if (booking == null) return;
+    if (booking == null) {
+      throw Exception('Booking not found: $bookingId');
+    }
 
-    // ANOTHER TRANSACTION for Returning the bike
-    await _firestore.runTransaction((transaction) async {
-      // 1. Update Booking
-      transaction.update(_bookingsCollection.doc(bookingId), {
-        'status': 'COMPLETED',
-        'returnDate': returnDate.toIso8601String(),
-        'rideDistance': rideDistance,
-        'rideDuration': rideDuration,
-      });
+    await _bookingsRef.child(bookingId).update({
+      'status': BookingStatus.completed.name.toUpperCase(),
+      'returnDate': returnDate.toUtc().toIso8601String(),
+      'rideDistance': rideDistance,
+      'rideDuration': rideDuration,
+    }).timeout(FirebaseConfig.defaultTimeout);
 
-      // 2. Update Bike Status
-      transaction.update(_bikesCollection.doc(booking.bikeId), {
-        'status': 'AVAILABLE',
-        'updatedAt': DateTime.now().toIso8601String(),
-      });
+    await _bikesRef.child(booking.bikeId).update({
+      'status': BikeStatus.available.name.toUpperCase(),
+    }).timeout(FirebaseConfig.defaultTimeout);
 
-      // 3. Update Station Count
-      final stationRef = _stationsCollection.doc(booking.stationId);
-      final stationDoc = await transaction.get(stationRef);
-      if (stationDoc.exists) {
-        final currentCount = stationDoc.get('availableBikes') as int;
-        transaction.update(stationRef, {
-          'availableBikes': currentCount + 1,
-          'lastUpdated': DateTime.now().toIso8601String(),
-        });
-      }
-    });
+    await _syncStationAvailability(booking.stationId);
   }
 
   @override
-  Future<void> cancelBooking(String bookingId) async {
-    final booking = await getBookingById(bookingId);
-    if (booking == null) return;
+  Future<Booking> createBooking(Booking booking) async {
+    final bikeSnapshot = await _bikesRef
+        .child(booking.bikeId)
+        .get()
+        .timeout(FirebaseConfig.defaultTimeout);
+    if (!bikeSnapshot.exists || bikeSnapshot.value == null) {
+      throw Exception('Bike not found: ${booking.bikeId}');
+    }
 
-    await _firestore.runTransaction((transaction) async {
-      transaction.update(_bookingsCollection.doc(bookingId), {'status': 'CANCELLED'});
-      transaction.update(_bikesCollection.doc(booking.bikeId), {'status': 'AVAILABLE'});
-      
-      final stationRef = _stationsCollection.doc(booking.stationId);
-      final stationDoc = await transaction.get(stationRef);
-      if (stationDoc.exists) {
-        final currentCount = stationDoc.get('availableBikes') as int;
-        transaction.update(stationRef, {'availableBikes': currentCount + 1});
+    final bikeMap = Map<String, dynamic>.from(bikeSnapshot.value as Map);
+    final bikeStatus = (bikeMap['status'] as String?) ?? 'AVAILABLE';
+    if (bikeStatus != BikeStatus.available.name.toUpperCase()) {
+      throw Exception('Bike is not available for booking');
+    }
+
+    final activeBooking = await getActiveBookingByUserId(booking.userId);
+    if (activeBooking != null && activeBooking.id != booking.id) {
+      throw Exception('User already has an active booking');
+    }
+
+    final bookingId = booking.id.isEmpty ? _bookingsRef.push().key : booking.id;
+    if (bookingId == null || bookingId.isEmpty) {
+      throw Exception('Unable to generate booking ID');
+    }
+
+    final created = booking.copyWith(
+      id: bookingId,
+      bookingDate: booking.bookingDate.toUtc(),
+      status: BookingStatus.active,
+    );
+
+    await _bookingsRef
+        .child(bookingId)
+        .set(BookingDTO.fromModel(created).toFirebase())
+        .timeout(FirebaseConfig.defaultTimeout);
+
+    return created;
+  }
+
+  @override
+  Future<Booking?> getActiveBookingByUserId(String userId) async {
+    final bookings = await getBookingsByUserId(userId);
+    try {
+      return bookings.firstWhere((booking) => booking.status == BookingStatus.active);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<Booking?> getBookingById(String bookingId) async {
+    final event = await _bookingsRef
+        .child(bookingId)
+        .get()
+        .timeout(FirebaseConfig.defaultTimeout);
+    if (!event.exists || event.value == null) {
+      return null;
+    }
+
+    final map = Map<String, dynamic>.from(event.value as Map);
+    map.putIfAbsent('id', () => bookingId);
+    return BookingDTO.fromFirebase(map).toModel();
+  }
+
+  @override
+  Future<List<Booking>> getBookingHistory(String userId, {int limit = 50}) async {
+    final all = await getBookingsByUserId(userId);
+    final history = all.where((booking) => booking.status != BookingStatus.active).toList();
+    history.sort((a, b) => b.bookingDate.compareTo(a.bookingDate));
+    return history.take(limit).toList(growable: false);
+  }
+
+  @override
+  Future<List<Booking>> getBookingsByUserId(String userId) async {
+    final event = await _bookingsRef.get().timeout(FirebaseConfig.defaultTimeout);
+    if (!event.exists || event.value == null) {
+      return <Booking>[];
+    }
+
+    final root = Map<String, dynamic>.from(event.value as Map);
+    final bookings = <Booking>[];
+    root.forEach((key, raw) {
+      final map = Map<String, dynamic>.from(raw as Map);
+      map.putIfAbsent('id', () => key);
+      final booking = BookingDTO.fromFirebase(map).toModel();
+      if (booking.userId == userId) {
+        bookings.add(booking);
       }
     });
+
+    bookings.sort((a, b) => b.bookingDate.compareTo(a.bookingDate));
+    return bookings;
+  }
+
+  @override
+  Future<void> updateBookingStatus(String bookingId, BookingStatus status) async {
+    await _bookingsRef.child(bookingId).update({
+      'status': status.name.toUpperCase(),
+    }).timeout(FirebaseConfig.defaultTimeout);
   }
 
   @override
   Stream<Booking?> watchActiveBooking(String userId) {
-    return _bookingsCollection
-        .where('userId', isEqualTo: userId)
-        .where('status', isEqualTo: 'ACTIVE')
-        .limit(1)
-        .snapshots()
-        .map((snapshot) {
-      if (snapshot.docs.isEmpty) return null;
-      final data = snapshot.docs.first.data() as Map<String, dynamic>;
-      return BookingDTO.fromFirebase(data).toModel();
+    return _bookingsRef.onValue.map((event) {
+      final value = event.snapshot.value;
+      if (value == null) {
+        return null;
+      }
+
+      final root = Map<String, dynamic>.from(value as Map);
+      final bookings = <Booking>[];
+      root.forEach((key, raw) {
+        final map = Map<String, dynamic>.from(raw as Map);
+        map.putIfAbsent('id', () => key);
+        final booking = BookingDTO.fromFirebase(map).toModel();
+        if (booking.userId == userId && booking.status == BookingStatus.active) {
+          bookings.add(booking);
+        }
+      });
+
+      if (bookings.isEmpty) {
+        return null;
+      }
+      bookings.sort((a, b) => b.bookingDate.compareTo(a.bookingDate));
+      return bookings.first;
+    }).handleError((Object error, StackTrace stackTrace) {
+      debugPrint('watchActiveBooking($userId) error: $error');
     });
   }
 
   @override
   Stream<List<Booking>> watchBookingsByUserId(String userId) {
-    return _bookingsCollection
-        .where('userId', isEqualTo: userId)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        return BookingDTO.fromFirebase(data).toModel();
-      }).toList();
+    return _bookingsRef.onValue.map((event) {
+      final value = event.snapshot.value;
+      if (value == null) {
+        return <Booking>[];
+      }
+
+      final root = Map<String, dynamic>.from(value as Map);
+      final bookings = <Booking>[];
+      root.forEach((key, raw) {
+        final map = Map<String, dynamic>.from(raw as Map);
+        map.putIfAbsent('id', () => key);
+        final booking = BookingDTO.fromFirebase(map).toModel();
+        if (booking.userId == userId) {
+          bookings.add(booking);
+        }
+      });
+
+      bookings.sort((a, b) => b.bookingDate.compareTo(a.bookingDate));
+      return bookings;
+    }).handleError((Object error, StackTrace stackTrace) {
+      debugPrint('watchBookingsByUserId($userId) error: $error');
     });
   }
 
-  @override
-  Future<List<Booking>> getBookingHistory(String userId, {int limit = 50}) async {
-    final snapshot = await _bookingsCollection
-        .where('userId', isEqualTo: userId)
-        .where('status', whereIn: ['COMPLETED', 'CANCELLED'])
-        .orderBy('bookingDate', descending: true)
-        .limit(limit)
-        .get();
+  Future<void> _syncStationAvailability(String stationId) async {
+    final bikesEvent = await _bikesRef.get().timeout(FirebaseConfig.defaultTimeout);
+    if (!bikesEvent.exists || bikesEvent.value == null) {
+      await _stationsRef.child(stationId).update({
+        'availableBikes': 0,
+        'lastUpdated': DateTime.now().toUtc().toIso8601String(),
+      }).timeout(FirebaseConfig.defaultTimeout);
+      return;
+    }
 
-    return snapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      return BookingDTO.fromFirebase(data).toModel();
-    }).toList();
+    final root = Map<String, dynamic>.from(bikesEvent.value as Map);
+    var availableCount = 0;
+    root.forEach((_, raw) {
+      final map = Map<String, dynamic>.from(raw as Map);
+      final bikeStationId = map['stationId'] as String?;
+      final status = map['status'] as String?;
+      if (bikeStationId == stationId && status == BikeStatus.available.name.toUpperCase()) {
+        availableCount += 1;
+      }
+    });
+
+    await _stationsRef.child(stationId).update({
+      'availableBikes': availableCount,
+      'lastUpdated': DateTime.now().toUtc().toIso8601String(),
+    }).timeout(FirebaseConfig.defaultTimeout);
   }
 }

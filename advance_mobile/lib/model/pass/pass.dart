@@ -70,11 +70,18 @@ class Pass {
   });
 
   /// Check if pass is expired
-  bool get isExpired => DateTime.now().isAfter(expiryDate);
+  bool get isExpired {
+    final nowUtc = DateTime.now().toUtc();
+    final expiryUtc = expiryDate.toUtc();
+    return !nowUtc.isBefore(expiryUtc);
+  }
 
   /// Get remaining days
   int get remainingDays {
-    final difference = expiryDate.difference(DateTime.now()).inDays;
+    final difference = expiryDate
+        .toUtc()
+        .difference(DateTime.now().toUtc())
+        .inDays;
     return difference > 0 ? difference : 0;
   }
 

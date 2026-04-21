@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'config/app_env.dart';
 import 'service_locator.dart';
+import 'services/firebase_service.dart';
 import 'services/google_maps_js_loader.dart';
 import 'ui/theme/app_theme.dart';
 import 'ui/screens/home/view_model/booking_viewmodel.dart';
@@ -16,13 +17,12 @@ import 'ui/screens/home/home_screen.dart';
 import 'ui/screens/map/map_screen.dart';
 import 'ui/screens/plans/plans_screen.dart';
 import 'ui/screens/profile/profile_screen.dart';
-import 'services/firebase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppEnv.load();
-  await ensureGoogleMapsJsLoaded(apiKey: AppEnv.googleMapsApiKey);
   await FirebaseService.initialize();
+  await ensureGoogleMapsJsLoaded(apiKey: AppEnv.googleMapsApiKey);
   await setupServiceLocator();
   runApp(const MyApp());
 }

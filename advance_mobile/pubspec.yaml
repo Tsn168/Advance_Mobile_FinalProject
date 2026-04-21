@@ -38,6 +38,7 @@ dependencies:
   get_it: ^9.2.1
   firebase_core: ^3.12.1
   cloud_firestore: ^5.6.7
+  firebase_database: ^11.3.5
   firebase_auth: ^5.5.2
   shared_preferences: ^2.3.0
   google_fonts: ^8.0.2

@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 
+import 'app_env.dart';
+
 /// Firebase collection names and configuration constants.
 /// Use these constants everywhere instead of hardcoding strings like 'users'.
 class FirebaseConfig {
@@ -9,6 +11,35 @@ class FirebaseConfig {
   static const String stationsCollection = 'stations';
   static const String bikesCollection = 'bikes';
   static const String bookingsCollection = 'bookings';
+
+  // Root paths in Realtime Database
+  static const String usersPath = 'users';
+  static const String passesPath = 'passes';
+  static const String stationsPath = 'stations';
+  static const String bikesPath = 'bikes';
+  static const String bookingsPath = 'bookings';
+
+  // Realtime Database URL resolution priority:
+  // 1) --dart-define FIREBASE_DATABASE_URL
+  // 2) runtime .env FIREBASE_DATABASE_URL
+  // 3) default project URL
+  static const String _compileTimeRealtimeDatabaseUrl = String.fromEnvironment(
+    'FIREBASE_DATABASE_URL',
+  );
+  static const String _defaultRealtimeDatabaseUrl =
+      'https://project-velo-t2y3-default-rtdb.asia-southeast1.firebasedatabase.app/';
+
+  static String get realtimeDatabaseUrl {
+    if (_compileTimeRealtimeDatabaseUrl.isNotEmpty) {
+      return _compileTimeRealtimeDatabaseUrl;
+    }
+
+    if (AppEnv.firebaseDatabaseUrl.isNotEmpty) {
+      return AppEnv.firebaseDatabaseUrl;
+    }
+
+    return _defaultRealtimeDatabaseUrl;
+  }
 
   // Request timeout
   static const Duration defaultTimeout = Duration(seconds: 10);

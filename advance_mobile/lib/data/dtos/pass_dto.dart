@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../../model/pass/pass.dart';
 
 /// Pass DTO - Data Transfer Object for Pass
@@ -63,20 +65,14 @@ class PassDTO {
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
       type: map['type'] ?? 'DAY',
-      startDate: map['startDate'] is DateTime
-          ? map['startDate']
-          : DateTime.parse(map['startDate'] ?? DateTime.now().toString()),
-      expiryDate: map['expiryDate'] is DateTime
-          ? map['expiryDate']
-          : DateTime.parse(map['expiryDate'] ?? DateTime.now().toString()),
+      startDate:
+          _parseDateTime(map['startDate'])?.toUtc() ?? DateTime.now().toUtc(),
+      expiryDate:
+          _parseDateTime(map['expiryDate'])?.toUtc() ?? DateTime.now().toUtc(),
       isActive: map['isActive'] ?? false,
       price: (map['price'] ?? 0.0).toDouble(),
       ridesUsed: map['ridesUsed'] ?? 0,
-      createdAt: map['createdAt'] is DateTime
-          ? map['createdAt']
-          : map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'])
-          : null,
+      createdAt: _parseDateTime(map['createdAt'])?.toUtc(),
     );
   }
 
@@ -86,12 +82,28 @@ class PassDTO {
       'id': id,
       'userId': userId,
       'type': type,
-      'startDate': startDate.toIso8601String(),
-      'expiryDate': expiryDate.toIso8601String(),
+      'startDate': startDate.toUtc().toIso8601String(),
+      'expiryDate': expiryDate.toUtc().toIso8601String(),
       'isActive': isActive,
       'price': price,
       'ridesUsed': ridesUsed,
-      'createdAt': createdAt?.toIso8601String(),
+      'createdAt': createdAt?.toUtc().toIso8601String(),
     };
+  }
+
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is Timestamp) {
+      return value.toDate();
+    }
+    if (value is DateTime) {
+      return value;
+    }
+    if (value is String && value.isNotEmpty) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 }
