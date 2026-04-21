@@ -13,6 +13,7 @@ import '../../widgets/station_marker.dart';
 import '../station_detail/station_detail_screen.dart';
 import '../station_detail/view_model/station_detail_view_model.dart';
 import 'view_model/map_viewmodel.dart';
+import '../../../widgets/station/station_card.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({
@@ -259,109 +260,111 @@ class _MapScreenState extends State<MapScreen> {
       return const Center(child: Text('No stations available'));
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Text(
-            'Tap a station marker',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF455A64),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          height: 120,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            scrollDirection: Axis.horizontal,
-            itemCount: stations.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              final station = stations[index];
-              final selectedId =
-                  _selectedStationId ?? mapViewModel.selectedStation?.id;
-              final isSelected = selectedId == station.id;
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      itemCount: stations.length,
+      itemBuilder: (context, index) {
+        final station = stations[index];
+        final isSelected = mapViewModel.selectedStation?.id == station.id;
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  StationMarker(
-                    key: Key('station_marker_${station.id}'),
-                    availableBikes: station.availableBikes,
-                    isSelected: isSelected,
-                    onTap: () =>
-                        _onStationSelected(context, mapViewModel, station.id),
-                  ),
-                  const SizedBox(height: 6),
-                  SizedBox(
-                    width: 90,
-                    child: Text(
-                      station.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF546E7A),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              StationCard(
+                stationName: station.name,
+                stationId: station.id,
+                totalSlots: station.totalSlots,
+                availableSlots: station.availableBikes,
+                location: station.address ?? 'No address',
+                onTap: () async {
+                  mapViewModel.selectStation(station.id);
+                  await bikeViewModel.loadBikesByStation(station.id);
+                },
+              ),
+              if (isSelected) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          if (!context.mounted) return;
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  StationDetailScreen(stationId: station.id),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.list),
+                        label: const Text('View Bikes'),
                       ),
                     ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: station.hasAvailableBikes
+                            ? () async {
+                                await _attemptBooking(
+                                  station,
+                                  bikeViewModel,
+                                  bookingViewModel,
+                                );
+                              }
+                            : null,
+                        icon: const Icon(Icons.directions_bike),
+                        label: const Text('Book Now'),
+                      ),
+                    ),
+                  ],
+                ),
+                if (bikeViewModel.bikes.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  const Text(
+                    'Station bikes',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Wrap(
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: bikeViewModel.bikes.map((bike) {
+                      return Chip(
+                        label: Text(
+                          '#${bike.slotNumber} ${bike.status.displayName}',
+                          style: AppTextStyles.labelMedium,
+                        ),
+                        backgroundColor: bike.status == BikeStatus.available
+                            ? AppColors.success.withValues(alpha: 0.18)
+                            : AppColors.surfaceVariant,
+                        side: BorderSide(
+                          color: bike.status == BikeStatus.available
+                              ? AppColors.success.withValues(alpha: 0.32)
+                              : AppColors.border,
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ],
-              );
-            },
+              ],
+            ],
           ),
         ),
       ],
     );
   }
 
-  Future<void> _onStationSelected(
-    BuildContext context,
-    MapViewModel mapViewModel,
-    String stationId,
+  Future<void> _attemptBooking(
+    Station station,
+    BikeViewModel bikeViewModel,
+    BookingViewModel bookingViewModel,
   ) async {
-    setState(() {
-      _selectedStationId = stationId;
-    });
-    mapViewModel.selectStation(stationId);
-
-    final openStationDetail = await showModalBottomSheet<bool>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return Consumer<MapViewModel>(
-          builder: (context, liveMapViewModel, _) {
-            final selectedId =
-                _selectedStationId ?? liveMapViewModel.selectedStation?.id;
-            final station = _findStationById(
-              liveMapViewModel.stations,
-              selectedId,
-            );
-
-            if (station == null) {
-              return const SizedBox.shrink();
-            }
-
-            return StationBottomSheet(
-              station: station,
-              onViewBikes: () => Navigator.of(sheetContext).pop(true),
-            );
-          },
-        );
-      },
-    );
-
-    if (openStationDetail == true) {
-      await _openStationDetail();
-    }
-  }
+    final messenger = ScaffoldMessenger.of(context);
 
   Future<void> _openStationDetail() async {
     final stationId = _selectedStationId;
