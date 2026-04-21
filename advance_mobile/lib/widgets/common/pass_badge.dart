@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../ui/theme/app_colors.dart';
+import '../../ui/theme/app_dimensions.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/theme/app_text_styles.dart';
 
@@ -81,11 +82,11 @@ class PassBadge extends StatelessWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
       ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: textColor.withOpacity(0.3), width: 1),
-      ),
+       decoration: BoxDecoration(
+         color: backgroundColor,
+         borderRadius: BorderRadius.circular(AppDimensions.buttonBorderRadius),
+         border: Border.all(color: textColor.withOpacity(0.3), width: 1),
+       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

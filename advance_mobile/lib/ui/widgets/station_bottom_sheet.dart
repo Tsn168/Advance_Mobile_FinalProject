@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../model/station/station.dart';
+import '../../ui/theme/app_colors.dart';
+import '../../ui/theme/app_dimensions.dart';
+import '../../ui/theme/app_spacing.dart';
 import 'station_availability_buttons.dart';
 
 class StationBottomSheet extends StatelessWidget {
@@ -20,15 +23,15 @@ class StationBottomSheet extends StatelessWidget {
       station.totalSlots,
     );
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
+     return Container(
+       padding: EdgeInsets.all(AppSpacing.xxl),
+       decoration: BoxDecoration(
+         color: Colors.white,
+         borderRadius: BorderRadius.only(
+           topLeft: Radius.circular(AppDimensions.bottomSheetBorderRadius),
+           topRight: Radius.circular(AppDimensions.bottomSheetBorderRadius),
+         ),
+       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,25 +47,25 @@ class StationBottomSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00BCD4),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'SELECTED',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ),
+               Container(
+                 padding: const EdgeInsets.symmetric(
+                   horizontal: 12,
+                   vertical: 6,
+                 ),
+                 decoration: BoxDecoration(
+                   color: AppColors.teal,
+                   borderRadius: BorderRadius.circular(12),
+                 ),
+                 child: const Text(
+                   'SELECTED',
+                   style: TextStyle(
+                     color: Colors.white,
+                     fontSize: 10,
+                     fontWeight: FontWeight.bold,
+                     letterSpacing: 0.4,
+                   ),
+                 ),
+               ),
             ],
           ),
           const SizedBox(height: 10),

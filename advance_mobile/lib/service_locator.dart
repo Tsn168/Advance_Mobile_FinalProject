@@ -11,7 +11,6 @@ import 'data/repositories/mock_data_store.dart';
 import 'data/repositories/pass/pass_repository.dart';
 import 'data/repositories/pass/pass_repository_firebase.dart';
 import 'data/repositories/pass/pass_repository_mock.dart';
-import 'services/error_handler.dart';
 import 'data/repositories/station/station_repository.dart';
 import 'data/repositories/station/station_repository_firebase.dart';
 import 'data/repositories/station/station_repository_mock.dart';
@@ -103,8 +102,12 @@ Future<void> setupServiceLocator() async {
   );
 
   getIt.registerFactory<BookingViewModel>(
-    () =>
-        BookingViewModel(getIt<IBookingRepository>(), getIt<IPassRepository>()),
+    () => BookingViewModel(
+      getIt<IBookingRepository>(),
+      getIt<IPassRepository>(),
+      bikeRepository: getIt<IBikeRepository>(),
+      stationRepository: getIt<IStationRepository>(),
+    ),
   );
 
   getIt.registerFactory<ProfileViewModel>(

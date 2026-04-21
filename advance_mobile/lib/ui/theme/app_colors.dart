@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary Blue Colors
+  // Figma Colors as per specification
+  static const Color teal = Color(0xFF00BCD4); // For primary actions and highlights
+  static const Color lightBlue = Color(0xFF81D4FA); // For secondary information
+  static const Color purpleBlue = Color(0xFF8B9DC3); // For bike cards
+  static const Color green = Color(0xFF00C853); // For selected states
+  static const Color blue = Color(0xFF2196F3); // For pass purchase buttons
+
+  // Primary Blue Colors (keeping some original for backward compatibility)
   static const Color primary = Color(0xFF2196F3); // Main blue
   static const Color primaryDark = Color(0xFF1976D2); // Darker blue
   static const Color primaryLight = Color(0xFF64B5F6); // Lighter blue

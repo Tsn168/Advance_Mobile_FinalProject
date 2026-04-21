@@ -293,7 +293,16 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
             ),
             ChangeNotifierProvider<PassViewModel>.value(value: passViewModel),
           ],
-          child: BookingConfirmationScreen(station: station, bike: bike),
+          child: BookingConfirmationScreen(
+            station: station,
+            bike: bike,
+            onBikeUnavailable: () async {
+              if (!mounted) {
+                return;
+              }
+              await viewModel.refreshBikes();
+            },
+          ),
         ),
       ),
     );

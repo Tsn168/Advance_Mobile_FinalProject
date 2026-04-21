@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../ui/theme/app_colors.dart';
+import '../../ui/theme/app_dimensions.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/theme/app_text_styles.dart';
 import 'custom_button.dart';
@@ -28,7 +29,7 @@ class ErrorDialogWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.bottomSheetBorderRadius)),
       title: Row(
         children: [
           Icon(Icons.error_outline, color: AppColors.error, size: 28),

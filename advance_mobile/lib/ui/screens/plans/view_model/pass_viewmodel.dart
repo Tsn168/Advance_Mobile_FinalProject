@@ -29,6 +29,23 @@ class PassViewModel extends ChangeNotifier {
   String get currentUserId => _currentUserId;
   bool get hasActivePass => _activePass != null;
 
+  Future<bool> canPurchasePass() async {
+    final currentActivePass = await _passRepository.getActivePass(_currentUserId);
+    return currentActivePass == null || currentActivePass.isExpired;
+  }
+
+  String getActivePassInfo() {
+    final activePass = _activePass;
+    if (activePass == null) {
+      return 'No active pass';
+    }
+
+    final month = activePass.expiryDate.month.toString().padLeft(2, '0');
+    final day = activePass.expiryDate.day.toString().padLeft(2, '0');
+    final date = '$month/$day/${activePass.expiryDate.year}';
+    return '${activePass.type.displayName} active until $date';
+  }
+
   Future<void> initialize({String userId = AppConstants.defaultUserId}) async {
     _currentUserId = userId;
     await Future.wait([loadAvailablePasses(), loadUserPasses()]);
@@ -96,9 +113,13 @@ class PassViewModel extends ChangeNotifier {
         _currentUserId,
       );
       if (currentActivePass != null) {
-        await _passRepository.updatePass(
-          currentActivePass.copyWith(isActive: false),
-        );
+        final month = currentActivePass.expiryDate.month.toString().padLeft(2, '0');
+        final day = currentActivePass.expiryDate.day.toString().padLeft(2, '0');
+        _state = AppState.error;
+        _errorMessage =
+            'You already have an active ${currentActivePass.type.displayName} pass valid until $month/$day/${currentActivePass.expiryDate.year}.';
+        notifyListeners();
+        return false;
       }
 
       final now = DateTime.now();
