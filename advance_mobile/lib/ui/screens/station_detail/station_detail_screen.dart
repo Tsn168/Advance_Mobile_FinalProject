@@ -14,10 +14,7 @@ import '../plans/view_model/pass_viewmodel.dart';
 import 'view_model/station_detail_view_model.dart';
 
 class StationDetailScreen extends StatefulWidget {
-  const StationDetailScreen({
-    super.key,
-    required this.stationId,
-  });
+  const StationDetailScreen({super.key, required this.stationId});
 
   final String stationId;
 
@@ -74,68 +71,64 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
     }
 
     final screen = Consumer<StationDetailViewModel>(
-        builder: (context, viewModel, _) {
-          return Scaffold(
-            appBar: AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {},
+      builder: (context, viewModel, _) {
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
+            title: const Text(
+              'KINETIC',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+            actions: const [
+              Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Color(0xFFE3F2FD),
+                  child: Icon(Icons.person, size: 18, color: AppColors.primary),
+                ),
               ),
-              title: const Text(
-                'KINETIC',
-                style: TextStyle(fontWeight: FontWeight.bold),
+            ],
+          ),
+          body: Column(
+            children: [
+              const SizedBox(height: AppSpacing.md),
+              const Text(
+                'View Available Bike',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF78909C),
+                ),
               ),
-              centerTitle: true,
-              actions: const [
-                Padding(
-                  padding: EdgeInsets.only(right: 12),
-                  child: CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Color(0xFFE3F2FD),
-                    child: Icon(Icons.person, size: 18, color: AppColors.primary),
-                  ),
-                ),
-              ],
-            ),
-            body: Column(
-              children: [
-                const SizedBox(height: AppSpacing.md),
-                const Text(
-                  'View Available Bike',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF78909C),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Expanded(child: _buildBody(context, viewModel)),
-              ],
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: 1,
-              type: BottomNavigationBarType.fixed,
-              onTap: (index) {
-                if (index == 1) {
-                  return;
-                }
-                Navigator.of(context).maybePop();
-              },
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.directions_bike),
-                  label: 'Bike',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.account_balance_wallet),
-                  label: 'Wallet',
-                ),
-                BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-              ],
-            ),
-          );
-        },
+              const SizedBox(height: AppSpacing.md),
+              Expanded(child: _buildBody(context, viewModel)),
+            ],
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: 1,
+            type: BottomNavigationBarType.fixed,
+            onTap: (index) {
+              if (index == 1) {
+                return;
+              }
+              Navigator.of(context).maybePop();
+            },
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.directions_bike),
+                label: 'Bike',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.account_balance_wallet),
+                label: 'Wallet',
+              ),
+            ],
+          ),
+        );
+      },
     );
 
     if (_ownsViewModel) {
@@ -203,7 +196,8 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
                     bikeModel: entry.bike!.model,
                     condition: entry.bike!.condition.displayName,
                     isAvailable: entry.bike!.isAvailable,
-                    onBook: () => _onBikeTap(context, viewModel, station, entry.bike!),
+                    onBook: () =>
+                        _onBikeTap(context, viewModel, station, entry.bike!),
                   )
                 : Card(
                     color: AppColors.grey200,

@@ -5,7 +5,7 @@ import '../../../config/app_constants.dart';
 import '../../../model/pass/pass.dart' as model_pass;
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
-import '../../../widgets/subscription/subscription_card.dart';
+// import '../../../widgets/subscription/subscription_card.dart';
 import '../../widgets/pass_card.dart';
 import 'view_model/pass_viewmodel.dart';
 
@@ -52,10 +52,7 @@ class _PlansScreenState extends State<PlansScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            leading: IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.menu),
-            ),
+            leading: IconButton(onPressed: () {}, icon: const Icon(Icons.menu)),
             title: const Text(
               'KINETIC',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -92,7 +89,7 @@ class _PlansScreenState extends State<PlansScreen> {
                   style: TextStyle(color: Color(0xFF607D8B), fontSize: 14),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                
+
                 // Active Pass Section (if any)
                 if (hasActivePass) ...[
                   _buildCurrentPassSection(passViewModel),
@@ -120,10 +117,14 @@ class _PlansScreenState extends State<PlansScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () => _showCurrentPlanDetails(context, passViewModel),
+                      onPressed: () =>
+                          _showCurrentPlanDetails(context, passViewModel),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF673AB7),
-                        side: const BorderSide(color: Color(0xFF673AB7), width: 2),
+                        side: const BorderSide(
+                          color: Color(0xFF673AB7),
+                          width: 2,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
@@ -188,13 +189,20 @@ class _PlansScreenState extends State<PlansScreen> {
                   ),
                   Text(
                     activePass?.type.displayName ?? 'Standard Pass',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   if (activePass != null) ...[
-                     const SizedBox(height: 4),
-                     Text(
+                    const SizedBox(height: 4),
+                    Text(
                       'Expires in ${activePass.expiryDate.difference(DateTime.now()).inDays} days',
-                      style: const TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ],
@@ -206,10 +214,13 @@ class _PlansScreenState extends State<PlansScreen> {
     );
   }
 
-  Future<void> _purchasePass(BuildContext context, model_pass.PassType type) async {
+  Future<void> _purchasePass(
+    BuildContext context,
+    model_pass.PassType type,
+  ) async {
     final messenger = ScaffoldMessenger.of(context);
     final passViewModel = context.read<PassViewModel>();
-    
+
     passViewModel.selectPassType(type);
     final success = await passViewModel.purchaseSelectedPass();
 
@@ -232,7 +243,10 @@ class _PlansScreenState extends State<PlansScreen> {
     }
   }
 
-  void _showCurrentPlanDetails(BuildContext context, PassViewModel passViewModel) {
+  void _showCurrentPlanDetails(
+    BuildContext context,
+    PassViewModel passViewModel,
+  ) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -252,8 +266,14 @@ class _PlansScreenState extends State<PlansScreen> {
               ),
               const SizedBox(height: 24),
               _buildDetailRow('Type', activePass?.type.displayName ?? 'N/A'),
-              _buildDetailRow('Purchased', activePass?.startDate.toString().split(' ')[0] ?? 'N/A'),
-              _buildDetailRow('Expiry', activePass?.expiryDate.toString().split(' ')[0] ?? 'N/A'),
+              _buildDetailRow(
+                'Purchased',
+                activePass?.startDate.toString().split(' ')[0] ?? 'N/A',
+              ),
+              _buildDetailRow(
+                'Expiry',
+                activePass?.expiryDate.toString().split(' ')[0] ?? 'N/A',
+              ),
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
@@ -261,7 +281,9 @@ class _PlansScreenState extends State<PlansScreen> {
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text('Close'),
                 ),
