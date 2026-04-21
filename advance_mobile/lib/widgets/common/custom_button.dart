@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../ui/theme/app_dimensions.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/theme/app_text_styles.dart';
 
@@ -26,7 +27,7 @@ class CustomButton extends StatelessWidget {
     this.textColor = Colors.white,
     this.icon,
     this.padding = const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-    this.borderRadius = 12.0,
+    this.borderRadius = AppDimensions.buttonBorderRadius,
     this.isLoading = false,
   }) : super(key: key);
 

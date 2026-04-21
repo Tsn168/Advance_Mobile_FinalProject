@@ -33,8 +33,13 @@ class BikeImageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCard(
-      padding: const EdgeInsets.all(0),
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: AppDimensions.cardMarginVertical,
+        horizontal: AppDimensions.cardMarginHorizontal,
+      ),
+      child: CustomCard(
+        padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -90,14 +95,14 @@ class BikeImageCard extends StatelessWidget {
                 top: AppSpacing.md,
                 right: AppSpacing.md,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isAvailable ? AppColors.success : AppColors.error,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                   padding: const EdgeInsets.symmetric(
+                     horizontal: AppSpacing.md,
+                     vertical: AppSpacing.sm,
+                   ),
+                   decoration: BoxDecoration(
+                     color: isAvailable ? AppColors.success : AppColors.error,
+                     borderRadius: BorderRadius.circular(AppDimensions.buttonBorderRadius),
+                   ),
                   child: Text(
                     isAvailable ? 'Available' : 'Booked',
                     style: AppTextStyles.caption.copyWith(
@@ -109,28 +114,28 @@ class BikeImageCard extends StatelessWidget {
                 ),
               ),
               // Bike ID
-              Positioned(
-                top: AppSpacing.md,
-                left: AppSpacing.md,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.black.withOpacity(0.6),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Bike #$bikeId',
-                    style: AppTextStyles.caption.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ),
+               Positioned(
+                 top: AppSpacing.md,
+                 left: AppSpacing.md,
+                 child: Container(
+                   padding: const EdgeInsets.symmetric(
+                     horizontal: AppSpacing.md,
+                     vertical: AppSpacing.xs,
+                   ),
+                   decoration: BoxDecoration(
+                     color: AppColors.black.withOpacity(0.6),
+                     borderRadius: BorderRadius.circular(AppDimensions.buttonBorderRadius),
+                   ),
+                   child: Text(
+                     'Bike #$bikeId',
+                     style: AppTextStyles.caption.copyWith(
+                       color: AppColors.white,
+                       fontWeight: FontWeight.bold,
+                       fontSize: 10,
+                     ),
+                   ),
+                 ),
+               ),
             ],
           ),
 
@@ -212,20 +217,20 @@ class BikeImageCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.lg),
 
                 // Choose Button
-                CustomButton(
-                  label: 'Choose',
-                  onPressed: isAvailable ? onChoose : null,
-                  width: double.infinity,
-                  backgroundColor: isAvailable
-                      ? AppColors.primary
-                      : AppColors.grey400,
-                  height: 44,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+                 CustomButton(
+                   label: 'Choose',
+                   onPressed: isAvailable ? onChoose : null,
+                   width: double.infinity,
+                   backgroundColor: isAvailable
+                       ? AppColors.primary
+                       : AppColors.grey400,
+                   height: 44,
+                 ),
+               ],
+             ),
+           ),
+         ],
+       ),
+     ),
+   );
+ }

@@ -75,8 +75,13 @@ class BookingStatusCard extends StatelessWidget {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
 
-    return CustomCard(
-      child: Column(
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        vertical: AppDimensions.cardMarginVertical,
+        horizontal: AppDimensions.cardMarginHorizontal,
+      ),
+      child: CustomCard(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header: Status Badge
@@ -96,16 +101,16 @@ class BookingStatusCard extends StatelessWidget {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: statusColor, width: 1.5),
-                ),
+               Container(
+                 padding: const EdgeInsets.symmetric(
+                   horizontal: AppSpacing.md,
+                   vertical: AppSpacing.sm,
+                 ),
+                 decoration: BoxDecoration(
+                   color: statusColor.withOpacity(0.2),
+                   borderRadius: BorderRadius.circular(AppDimensions.buttonBorderRadius),
+                   border: Border.all(color: statusColor, width: 1.5),
+                 ),
                 child: Row(
                   children: [
                     Icon(statusIcon, color: statusColor, size: 16),
@@ -216,12 +221,13 @@ class BookingStatusCard extends StatelessWidget {
                     label: 'Cancel Booking',
                     onPressed: onCancel,
                     backgroundColor: AppColors.error,
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+                 ),
+               ],
+             ],
+           ),
+         ],
+       ),
+     ),
+   );
+ }
 }

@@ -5,6 +5,7 @@ import '../../../config/app_constants.dart';
 import '../../../model/pass/pass.dart';
 import '../../widgets/pass_card.dart';
 import '../../widgets/pass_info_card.dart';
+import '../../ui/theme/app_colors.dart';
 import 'view_model/pass_viewmodel.dart';
 
 class PlansScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class _PlansScreenState extends State<PlansScreen> {
     _PassOption(
       type: PassType.day,
       badgeText: 'QUICK START',
-      badgeColor: Color(0xFF2196F3),
+      badgeColor: AppColors.teal,
       description:
           '24 hours validity. Perfect for visitors and spontaneous city exploration.',
       displayPrice: 5.00,
@@ -27,7 +28,7 @@ class _PlansScreenState extends State<PlansScreen> {
     _PassOption(
       type: PassType.monthly,
       badgeText: 'BEST VALUE',
-      badgeColor: Color(0xFFFF9800),
+      badgeColor: AppColors.blue,
       description:
           '30 days validity. Unlimited 60-minute rides for daily commuters and locals.',
       displayPrice: 25.00,
@@ -35,7 +36,7 @@ class _PlansScreenState extends State<PlansScreen> {
     _PassOption(
       type: PassType.annual,
       badgeText: 'BEST IDEA',
-      badgeColor: Color(0xFFFFC107),
+      badgeColor: AppColors.lightBlue,
       description:
           '365 days validity. The ultimate commitment to green mobility and health.',
       displayPrice: 150.00,
@@ -59,16 +60,16 @@ class _PlansScreenState extends State<PlansScreen> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             centerTitle: true,
-            actions: const [
-              Padding(
-                padding: EdgeInsets.only(right: 12),
-                child: CircleAvatar(
-                  radius: 16,
-                  backgroundColor: Color(0xFFE3F2FD),
-                  child: Icon(Icons.person, size: 18, color: Color(0xFF2196F3)),
-                ),
-              ),
-            ],
+             actions: const [
+               Padding(
+                 padding: EdgeInsets.only(right: 12),
+                 child: CircleAvatar(
+                   radius: 16,
+                   backgroundColor: Color(0xFFE3F2FD),
+                   child: Icon(Icons.person, size: 18, color: AppColors.blue),
+                 ),
+               ),
+             ],
           ),
           body: RefreshIndicator(
             onRefresh: () async {
