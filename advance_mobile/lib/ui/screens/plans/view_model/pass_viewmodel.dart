@@ -4,6 +4,7 @@ import '../../../../config/app_constants.dart';
 import '../../../../model/pass/pass.dart';
 import '../../../../data/repositories/pass/pass_repository.dart';
 import '../../../../data/repositories/user/user_repository.dart';
+import '../../../../services/error_handler.dart';
 
 class PassViewModel extends ChangeNotifier {
   PassViewModel(this._passRepository, this._userRepository);
@@ -43,7 +44,7 @@ class PassViewModel extends ChangeNotifier {
       _state = AppState.success;
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     notifyListeners();
   }
@@ -59,7 +60,7 @@ class PassViewModel extends ChangeNotifier {
       _state = AppState.success;
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     notifyListeners();
   }
@@ -116,7 +117,7 @@ class PassViewModel extends ChangeNotifier {
       return true;
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       notifyListeners();
       return false;
     }

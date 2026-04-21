@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import '../../../../services/error_handler.dart';
 
 import '../../../../config/app_constants.dart';
 import '../../../../model/booking/booking.dart';
@@ -77,7 +78,7 @@ class BookingViewModel extends ChangeNotifier {
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     _notifySafe();
   }
@@ -155,7 +156,7 @@ class BookingViewModel extends ChangeNotifier {
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       _notifySafe();
       return false;
     }
@@ -183,14 +184,14 @@ class BookingViewModel extends ChangeNotifier {
             onError: (Object error) {
               _state = AppState.error;
               _flowStatus = BookingFlowStatus.failed;
-              _errorMessage = ErrorHandler.handleError(error);
+              _errorMessage = ErrorHandlerService.handleError(error);
               _notifySafe();
             },
           );
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       _notifySafe();
     }
   }
@@ -242,7 +243,7 @@ class BookingViewModel extends ChangeNotifier {
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       _notifySafe();
       return false;
     }
@@ -275,7 +276,7 @@ class BookingViewModel extends ChangeNotifier {
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     _notifySafe();
   }
@@ -298,7 +299,7 @@ class BookingViewModel extends ChangeNotifier {
     } catch (error) {
       _state = AppState.error;
       _flowStatus = BookingFlowStatus.failed;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     _notifySafe();
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import '../../../../services/error_handler.dart';
 
 import '../../../../config/app_constants.dart';
 import '../../../../data/repositories/bike/bike_repository.dart';
@@ -67,13 +68,13 @@ class StationDetailViewModel extends ChangeNotifier {
         },
         onError: (Object error) {
           _state = AppState.error;
-          _errorMessage = ErrorHandler.handleError(error);
+          _errorMessage = ErrorHandlerService.handleError(error);
           notifyListeners();
         },
       );
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       notifyListeners();
     }
   }
@@ -113,7 +114,7 @@ class StationDetailViewModel extends ChangeNotifier {
       _state = AppState.success;
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     notifyListeners();
   }

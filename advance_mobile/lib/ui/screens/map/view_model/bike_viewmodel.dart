@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../config/app_constants.dart';
 import '../../../../model/bike/bike.dart';
 import '../../../../data/repositories/bike/bike_repository.dart';
+import '../../../../services/error_handler.dart';
 
 class BikeViewModel extends ChangeNotifier {
   BikeViewModel(this._bikeRepository);
@@ -48,13 +49,13 @@ class BikeViewModel extends ChangeNotifier {
             },
             onError: (Object error) {
               _state = AppState.error;
-              _errorMessage = ErrorHandler.handleError(error);
+              _errorMessage = ErrorHandlerService.handleError(error);
               notifyListeners();
             },
           );
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
       notifyListeners();
     }
   }
@@ -72,7 +73,7 @@ class BikeViewModel extends ChangeNotifier {
       _state = AppState.success;
     } catch (error) {
       _state = AppState.error;
-      _errorMessage = ErrorHandler.handleError(error);
+      _errorMessage = ErrorHandlerService.handleError(error);
     }
     notifyListeners();
   }
