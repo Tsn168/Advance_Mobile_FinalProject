@@ -79,9 +79,12 @@ class MainNavigationScreen extends StatelessWidget {
       body: IndexedStack(
         index: navigationState.currentTabIndex,
         children: [
-          MapScreen(onNavigateToPlans: () => navigationState.goToPlans()),
-          const PlansScreen(),
-          const ProfileScreen(),
+          MapScreen(
+            key: const ValueKey('MapScreen'),
+            onNavigateToPlans: () => navigationState.goToPlans(),
+          ),
+          const PlansScreen(key: ValueKey('PlansScreen')),
+          const ProfileScreen(key: ValueKey('ProfileScreen')),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
