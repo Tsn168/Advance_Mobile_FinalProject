@@ -12,6 +12,7 @@ import 'view_model/bike_viewmodel.dart';
 import '../home/view_model/booking_viewmodel.dart';
 import '../station_detail/station_detail_screen.dart';
 import 'view_model/map_viewmodel.dart';
+import '../../../widgets/station/station_card.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key, required this.onNavigateToPlans});
@@ -226,54 +227,30 @@ class _MapScreenState extends State<MapScreen> {
         final station = stations[index];
         final isSelected = mapViewModel.selectedStation?.id == station.id;
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: AppSpacing.md),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: isSelected ? AppColors.primary : AppColors.border,
-              width: isSelected ? 2 : 1,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(station.name, style: AppTextStyles.h5),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            station.address ?? 'No address',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.grey600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _availabilityBadge(station),
-                  ],
-                ),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              StationCard(
+                stationName: station.name,
+                stationId: station.id,
+                totalSlots: station.totalSlots,
+                availableSlots: station.availableBikes,
+                location: station.address ?? 'No address',
+                onTap: () async {
+                  mapViewModel.selectStation(station.id);
+                  await bikeViewModel.loadBikesByStation(station.id);
+                },
+              ),
+              if (isSelected) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          mapViewModel.selectStation(station.id);
-                          await bikeViewModel.loadBikesByStation(station.id);
-
-                          if (!context.mounted) {
-                            return;
-                          }
-
+                          if (!context.mounted) return;
                           await Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) =>
@@ -290,9 +267,6 @@ class _MapScreenState extends State<MapScreen> {
                       child: ElevatedButton.icon(
                         onPressed: station.hasAvailableBikes
                             ? () async {
-                                await bikeViewModel.loadBikesByStation(
-                                  station.id,
-                                );
                                 await _attemptBooking(
                                   station,
                                   bikeViewModel,
@@ -306,7 +280,7 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ],
                 ),
-                if (isSelected && bikeViewModel.bikes.isNotEmpty) ...[
+                if (bikeViewModel.bikes.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
                   const Text(
                     'Station bikes',
@@ -338,45 +312,10 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ],
               ],
-            ),
+            ],
           ),
         );
       },
-    );
-  }
-
-  Widget _availabilityBadge(Station station) {
-    final hasBikes = station.hasAvailableBikes;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: hasBikes
-            ? AppColors.success.withValues(alpha: 0.12)
-            : AppColors.error.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            '${station.availableBikes}/${station.totalSlots}',
-            style: TextStyle(
-              color: hasBikes ? AppColors.success : AppColors.error,
-              fontWeight: FontWeight.w800,
-              fontSize: 14,
-            ),
-          ),
-          Text(
-            'available',
-            style: TextStyle(
-              color: hasBikes ? AppColors.success : AppColors.error,
-              fontWeight: FontWeight.w500,
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

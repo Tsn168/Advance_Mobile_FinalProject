@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
-import '../../../model/pass/pass.dart';
+import '../../../model/pass/pass.dart' as model_pass;
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../../../widgets/subscription/subscription_card.dart';
 import 'view_model/pass_viewmodel.dart';
 
 class PlansScreen extends StatefulWidget {
@@ -42,13 +43,17 @@ class _PlansScreenState extends State<PlansScreen> {
                 if (passViewModel.state == AppState.loading)
                   const Center(child: CircularProgressIndicator())
                 else ...[
-                  ...PassType.values.map(
+                  ...model_pass.PassType.values.map(
                     (type) => Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: _PlanCard(
-                        passType: type,
-                        isSelected: passViewModel.selectedPassType == type,
-                        onSelect: () => passViewModel.selectPassType(type),
+                      child: SubscriptionCard(
+                        passType: _mapPassType(type),
+                        price: type.price,
+                        originalPrice: '',
+                        description: 'Enjoy unlimited rides for ${type.durationDays} day(s).',
+                        isActive: passViewModel.selectedPassType == type,
+                        isPopular: type == model_pass.PassType.monthly,
+                        onChoose: () => passViewModel.selectPassType(type),
                       ),
                     ),
                   ),
@@ -106,6 +111,17 @@ class _PlansScreenState extends State<PlansScreen> {
     );
   }
 
+  PassType _mapPassType(model_pass.PassType type) {
+    switch (type) {
+      case model_pass.PassType.monthly:
+        return PassType.monthly;
+      case model_pass.PassType.annual:
+        return PassType.annual;
+      default:
+        return PassType.day;
+    }
+  }
+
   Future<void> _purchaseSelectedPlan(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     final passViewModel = context.read<PassViewModel>();
@@ -128,77 +144,6 @@ class _PlansScreenState extends State<PlansScreen> {
     final message = passViewModel.errorMessage ?? 'Purchase failed';
     messenger.showSnackBar(
       SnackBar(content: Text(message), backgroundColor: AppColors.error),
-    );
-  }
-}
-
-class _PlanCard extends StatelessWidget {
-  const _PlanCard({
-    required this.passType,
-    required this.isSelected,
-    required this.onSelect,
-  });
-
-  final PassType passType;
-  final bool isSelected;
-  final VoidCallback onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onSelect,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.grey300,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.08)
-              : AppColors.white,
-        ),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  passType.displayName,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '\$${passType.price.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              '${passType.durationDays} day(s)',
-              style: const TextStyle(color: AppColors.grey600),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              isSelected ? 'Selected' : 'Tap to select',
-              style: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.grey600,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

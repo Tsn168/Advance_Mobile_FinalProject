@@ -8,6 +8,10 @@ import '../../states/navigation_state.dart';
 import '../home/view_model/booking_viewmodel.dart';
 import '../plans/plans_screen.dart';
 import '../plans/view_model/pass_viewmodel.dart';
+import '../../../widgets/common/custom_card.dart';
+import '../../../widgets/common/custom_button.dart';
+import '../../../widgets/common/pass_badge.dart';
+import '../../theme/app_colors.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
   const BookingConfirmationScreen({
@@ -80,29 +84,25 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Widget _buildBookingSummaryCard() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Booking Summary',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text('Station: ${widget.station.name}'),
-            const SizedBox(height: 6),
-            Text('Bike: #${widget.bike.id}'),
-            const SizedBox(height: 6),
-            Text('Slot: ${widget.bike.slotNumber}'),
-            const SizedBox(height: 6),
-            Text('Model: ${widget.bike.model}'),
-            const SizedBox(height: 6),
-            Text('Condition: ${widget.bike.condition.displayName}'),
-          ],
-        ),
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Booking Summary',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Text('Station: ${widget.station.name}'),
+          const SizedBox(height: 6),
+          Text('Bike: #${widget.bike.id}'),
+          const SizedBox(height: 6),
+          Text('Slot: ${widget.bike.slotNumber}'),
+          const SizedBox(height: 6),
+          Text('Model: ${widget.bike.model}'),
+          const SizedBox(height: 6),
+          Text('Condition: ${widget.bike.condition.displayName}'),
+        ],
       ),
     );
   }
@@ -114,28 +114,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }) {
     final hasPass = passViewModel.hasActivePass;
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Authorization',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            if (isProcessing) ...[
-              const LinearProgressIndicator(),
-              const SizedBox(height: 12),
-            ],
-            if (hasPass)
-              _buildHasPassSection(passViewModel, bookingViewModel, isProcessing)
-            else
-              _buildNoPassSection(bookingViewModel, passViewModel, isProcessing),
-          ],
-        ),
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Authorization',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          if (hasPass)
+            _buildHasPassSection(passViewModel, bookingViewModel, isProcessing)
+          else
+            _buildNoPassSection(bookingViewModel, passViewModel, isProcessing),
+        ],
       ),
     );
   }
@@ -150,34 +142,22 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: const [
-            Icon(Icons.verified, color: Color(0xFF2E7D32)),
-            SizedBox(width: 8),
-            Text(
-              'Active Pass',
-              style: TextStyle(
-                color: Color(0xFF2E7D32),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+        const PassBadge(
+          badgeType: PassBadgeType.active,
+          label: 'Active Pass',
+          isActive: true,
         ),
         if (activePass != null) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text('Type: ${activePass.type.displayName}'),
           const SizedBox(height: 4),
           Text('Expires: ${_formatDate(activePass.expiryDate)}'),
         ],
         const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: isProcessing
-                ? null
-                : () => _onConfirmBookingTap(bookingViewModel),
-            child: const Text('Confirm Booking'),
-          ),
+        CustomButton(
+          label: 'Confirm Booking',
+          onPressed: () => _onConfirmBookingTap(bookingViewModel),
+          isLoading: isProcessing,
         ),
       ],
     );
@@ -191,42 +171,27 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: const [
-            Icon(Icons.warning_amber_rounded, color: Color(0xFFF57C00)),
-            SizedBox(width: 8),
-            Text(
-              'No Active Pass',
-              style: TextStyle(
-                color: Color(0xFFF57C00),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+        const PassBadge(
+          badgeType: PassBadgeType.inactive,
+          label: 'No Active Pass',
+          isActive: false,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         const Text('Purchase a single ticket or go to plans to continue.'),
         const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: isProcessing
-                ? null
-                : () => _onPurchaseSingleTicketTap(
-                      bookingViewModel,
-                      passViewModel,
-                    ),
-            icon: const Icon(Icons.confirmation_num),
-            label: const Text('Purchase Single Ticket'),
-          ),
+        CustomButton(
+          label: 'Purchase Single Ticket',
+          icon: Icons.confirmation_num,
+          onPressed: () => _onPurchaseSingleTicketTap(bookingViewModel, passViewModel),
+          isLoading: isProcessing,
         ),
         const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton(
-            onPressed: isProcessing ? null : () => _onGoToPlansTap(passViewModel),
-            child: const Text('Go to Plans'),
-          ),
+        CustomButton(
+          label: 'Go to Plans',
+          backgroundColor: AppColors.grey200,
+          textColor: AppColors.grey800,
+          onPressed: () => _onGoToPlansTap(passViewModel),
+          isLoading: isProcessing,
         ),
       ],
     );

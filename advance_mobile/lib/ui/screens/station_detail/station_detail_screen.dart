@@ -7,7 +7,7 @@ import '../../../model/station/station.dart';
 import '../../../service_locator.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
-import '../../widgets/bike_slot_card.dart';
+import '../../../widgets/bike/bike_card.dart';
 import '../booking_confirmation/booking_confirmation_screen.dart';
 import '../home/view_model/booking_viewmodel.dart';
 import '../plans/view_model/pass_viewmodel.dart';
@@ -161,18 +161,37 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
           final entry = listEntries[index];
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
-            child: BikeSlotCard(
-              bike: entry.bike,
-              slotNumber: entry.slotNumber,
-              onTap: entry.bike == null
-                  ? null
-                  : () => _onBikeTap(
-                      context,
-                      viewModel,
-                      station,
-                      entry.bike!,
+            child: entry.bike != null
+                ? BikeCard(
+                    slotNumber: entry.slotNumber,
+                    bikeModel: entry.bike!.model,
+                    condition: entry.bike!.condition.displayName,
+                    isAvailable: entry.bike!.isAvailable,
+                    onBook: () => _onBikeTap(context, viewModel, station, entry.bike!),
+                  )
+                : Card(
+                    color: AppColors.grey200,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-            ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.crop_free, color: AppColors.grey600),
+                          const SizedBox(width: AppSpacing.md),
+                          Text(
+                            'Slot #${entry.slotNumber} - Empty',
+                            style: const TextStyle(
+                              color: AppColors.grey600,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
           );
         },
       ),
