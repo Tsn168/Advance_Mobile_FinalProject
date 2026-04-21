@@ -32,6 +32,10 @@ class AppEnv {
     return (_values['GOOGLE_MAPS_API_KEY'] ?? '').trim();
   }
 
+  static String get firebaseDatabaseUrl {
+    return (_values['FIREBASE_DATABASE_URL'] ?? '').trim();
+  }
+
   static Map<String, String> _parse(String raw) {
     final result = <String, String>{};
 
