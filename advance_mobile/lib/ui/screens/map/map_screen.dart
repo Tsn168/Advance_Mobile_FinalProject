@@ -74,14 +74,19 @@ class _MapScreenState extends State<MapScreen> {
             ),
             child: Stack(
               children: [
-                Column(
-                  children: [
-                    _buildBikeStatsHeader(mapViewModel),
-                    _buildGoogleMap(mapViewModel),
-                    const SizedBox(height: AppSpacing.md),
-                    Expanded(
-                      child: _buildStationList(
-                          context, mapViewModel, bikeViewModel, bookingViewModel),
+                CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _buildBikeStatsHeader(mapViewModel),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _buildGoogleMap(mapViewModel),
+                    ),
+                    _buildStationListSliver(
+                        context, mapViewModel, bikeViewModel, bookingViewModel),
+                    // Add some bottom padding so cards are not hidden by the overlay
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 100),
                     ),
                   ],
                 ),
@@ -254,115 +259,127 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _buildStationList(
+  Widget _buildStationListSliver(
     BuildContext context,
     MapViewModel mapViewModel,
     BikeViewModel bikeViewModel,
     BookingViewModel bookingViewModel,
   ) {
     if (mapViewModel.state == AppState.loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SliverFillRemaining(
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
 
     if (mapViewModel.state == AppState.error) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Text(mapViewModel.errorMessage ?? 'Failed to load stations'),
+      return SliverFillRemaining(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Text(mapViewModel.errorMessage ?? 'Failed to load stations'),
+          ),
         ),
       );
     }
 
     final stations = mapViewModel.stations;
     if (stations.isEmpty) {
-      return const Center(child: Text('No stations available'));
+      return const SliverFillRemaining(
+        child: Center(child: Text('No stations available')),
+      );
     }
 
-    return ListView.builder(
+    return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      itemCount: stations.length,
-      itemBuilder: (context, index) {
-        final station = stations[index];
-        final isSelected = mapViewModel.selectedStation?.id == station.id;
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final station = stations[index];
+            final isSelected = mapViewModel.selectedStation?.id == station.id;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              StationCard(
-                stationName: station.name,
-                stationId: station.id,
-                totalSlots: station.totalSlots,
-                availableSlots: station.availableBikes,
-                location: station.address ?? 'No address',
-                onTap: () async {
-                  mapViewModel.selectStation(station.id);
-                  setState(() {
-                    _selectedStationId = station.id;
-                  });
-                  await bikeViewModel.loadBikesByStation(station.id);
-                },
-              ),
-              if (isSelected) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _openStationDetail(station.id),
-                        icon: const Icon(Icons.list),
-                        label: const Text('View Bikes'),
-                      ),
+            return Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  StationCard(
+                    stationName: station.name,
+                    stationId: station.id,
+                    totalSlots: station.totalSlots,
+                    availableSlots: station.availableBikes,
+                    location: station.address ?? 'No address',
+                    onTap: () async {
+                      mapViewModel.selectStation(station.id);
+                      setState(() {
+                        _selectedStationId = station.id;
+                      });
+                      await bikeViewModel.loadBikesByStation(station.id);
+                    },
+                  ),
+                  if (isSelected) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _openStationDetail(station.id),
+                            icon: const Icon(Icons.list),
+                            label: const Text('View Bikes'),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: station.hasAvailableBikes
+                                ? () => _attemptBooking(
+                                    context, station, bikeViewModel, bookingViewModel)
+                                : null,
+                            icon: const Icon(Icons.directions_bike),
+                            label: const Text('Book Now'),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: station.hasAvailableBikes
-                            ? () => _attemptBooking(context, station, bikeViewModel, bookingViewModel)
-                            : null,
-                        icon: const Icon(Icons.directions_bike),
-                        label: const Text('Book Now'),
+                    if (bikeViewModel.bikes.isNotEmpty &&
+                        bikeViewModel.stationId == station.id) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      const Text(
+                        'Station bikes',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Wrap(
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
+                        children: bikeViewModel.bikes.map((bike) {
+                          return Chip(
+                            label: Text(
+                              '#${bike.slotNumber} ${bike.status.displayName}',
+                              style: AppTextStyles.labelMedium,
+                            ),
+                            backgroundColor: bike.status == BikeStatus.available
+                                ? AppColors.success.withValues(alpha: 0.18)
+                                : AppColors.surfaceVariant,
+                            side: BorderSide(
+                              color: bike.status == BikeStatus.available
+                                  ? AppColors.success.withValues(alpha: 0.32)
+                                  : AppColors.border,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ],
-                ),
-                if (bikeViewModel.bikes.isNotEmpty && bikeViewModel.stationId == station.id) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  const Text(
-                    'Station bikes',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Wrap(
-                    spacing: AppSpacing.xs,
-                    runSpacing: AppSpacing.xs,
-                    children: bikeViewModel.bikes.map((bike) {
-                      return Chip(
-                        label: Text(
-                          '#${bike.slotNumber} ${bike.status.displayName}',
-                          style: AppTextStyles.labelMedium,
-                        ),
-                        backgroundColor: bike.status == BikeStatus.available
-                            ? AppColors.success.withValues(alpha: 0.18)
-                            : AppColors.surfaceVariant,
-                        side: BorderSide(
-                          color: bike.status == BikeStatus.available
-                              ? AppColors.success.withValues(alpha: 0.32)
-                              : AppColors.border,
-                        ),
-                      );
-                    }).toList(),
-                  ),
                 ],
-              ],
-            ],
-          ),
-        );
-      },
+              ),
+            );
+          },
+          childCount: stations.length,
+        ),
+      ),
     );
   }
 
