@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
-import '../../../model/pass/pass.dart';
-import '../../widgets/pass_card.dart';
-import '../../widgets/pass_info_card.dart';
+import '../../../model/pass/pass.dart' as model_pass;
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../../widgets/subscription/subscription_card.dart';
 import 'view_model/pass_viewmodel.dart';
 
 class PlansScreen extends StatefulWidget {
@@ -89,18 +90,22 @@ class _PlansScreenState extends State<PlansScreen> {
                   'Fuel your momentum with flexible access to our fleet.',
                   style: TextStyle(color: Color(0xFF607D8B), fontSize: 14),
                 ),
-                const SizedBox(height: 16),
-                if (hasActivePass) ...[
-                  PassInfoCard(
-                    activePass: passViewModel.activePass,
-                    onManage: () => _showCurrentPlanDetails(context, passViewModel),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    passViewModel.getActivePassInfo(),
-                    style: const TextStyle(
-                      color: Color(0xFF00695C),
-                      fontWeight: FontWeight.w600,
+                const SizedBox(height: AppSpacing.lg),
+                if (passViewModel.state == AppState.loading)
+                  const Center(child: CircularProgressIndicator())
+                else ...[
+                  ...model_pass.PassType.values.map(
+                    (type) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: SubscriptionCard(
+                        passType: _mapPassType(type),
+                        price: type.price,
+                        originalPrice: '',
+                        description: 'Enjoy unlimited rides for ${type.durationDays} day(s).',
+                        isActive: passViewModel.selectedPassType == type,
+                        isPopular: type == model_pass.PassType.monthly,
+                        onChoose: () => passViewModel.selectPassType(type),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -163,7 +168,52 @@ class _PlansScreenState extends State<PlansScreen> {
     );
   }
 
-  Future<void> _purchasePass(BuildContext context, PassType passType) async {
+  Widget _buildCurrentPassSection(PassViewModel passViewModel) {
+    final activePass = passViewModel.activePass;
+
+    return Card(
+      color: AppColors.primary.withValues(alpha: 0.08),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Your Current Plan',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            if (activePass == null)
+              const Text('No active plan yet.')
+            else ...[
+              Text(activePass.type.displayName),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Remaining ${activePass.remainingDays} day(s)',
+                style: const TextStyle(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  PassType _mapPassType(model_pass.PassType type) {
+    switch (type) {
+      case model_pass.PassType.monthly:
+        return PassType.monthly;
+      case model_pass.PassType.annual:
+        return PassType.annual;
+      default:
+        return PassType.day;
+    }
+  }
+
+  Future<void> _purchaseSelectedPlan(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
     final passViewModel = context.read<PassViewModel>();
     passViewModel.selectPassType(passType);
@@ -188,54 +238,4 @@ class _PlansScreenState extends State<PlansScreen> {
       SnackBar(content: Text(message), backgroundColor: const Color(0xFFD32F2F)),
     );
   }
-
-  Future<void> _showCurrentPlanDetails(
-    BuildContext context,
-    PassViewModel passViewModel,
-  ) async {
-    final activePass = passViewModel.activePass;
-    if (activePass == null) {
-      return;
-    }
-
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Current Plan Details'),
-          content: Text(
-            '${activePass.type.displayName}\nExpires: ${_formatDate(activePass.expiryDate)}\nRemaining: ${activePass.remainingDays} day(s)',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
-    return '$month/$day/${date.year}';
-  }
-}
-
-class _PassOption {
-  const _PassOption({
-    required this.type,
-    required this.badgeText,
-    required this.badgeColor,
-    required this.description,
-    required this.displayPrice,
-  });
-
-  final PassType type;
-  final String badgeText;
-  final Color badgeColor;
-  final String description;
-  final double displayPrice;
 }
