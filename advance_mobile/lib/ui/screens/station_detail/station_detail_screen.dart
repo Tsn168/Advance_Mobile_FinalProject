@@ -11,6 +11,7 @@ import '../../../widgets/bike/bike_card.dart';
 import '../booking_confirmation/booking_confirmation_screen.dart';
 import '../map/view_model/booking_viewmodel.dart';
 import '../plans/view_model/pass_viewmodel.dart';
+import '../../states/navigation_state.dart';
 import 'view_model/station_detail_view_model.dart';
 
 class StationDetailScreen extends StatefulWidget {
@@ -107,24 +108,24 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
-            currentIndex: 1,
+            currentIndex: context.watch<NavigationState>().currentTabIndex,
             type: BottomNavigationBarType.fixed,
             onTap: (index) {
-              if (index == 1) {
+              final navState = context.read<NavigationState>();
+              if (index == navState.currentTabIndex) {
+                Navigator.of(context).maybePop();
                 return;
               }
-              Navigator.of(context).maybePop();
+              navState.setTab(index);
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
             items: const [
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
               BottomNavigationBarItem(
-                icon: Icon(Icons.directions_bike),
-                label: 'Bike',
+                icon: Icon(Icons.card_membership),
+                label: 'Plans',
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.account_balance_wallet),
-                label: 'Wallet',
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
             ],
           ),
         );
