@@ -189,41 +189,50 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
         itemCount: listEntries.length,
         itemBuilder: (context, index) {
           final entry = listEntries[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: entry.bike != null
-                ? BikeCard(
-                    slotNumber: entry.slotNumber,
-                    bikeModel: entry.bike!.model,
-                    condition: entry.bike!.condition.displayName,
-                    isAvailable: entry.bike!.isAvailable,
-                    onBook: () =>
-                        _onBikeTap(context, viewModel, station, entry.bike!),
-                  )
-                : Card(
-                    color: AppColors.grey200,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.crop_free, color: AppColors.grey600),
-                          const SizedBox(width: AppSpacing.md),
-                          Text(
-                            'Slot #${entry.slotNumber} - Empty',
-                            style: const TextStyle(
-                              color: AppColors.grey600,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+          
+          if (entry.isEmptySummary) {
+            return Card(
+              color: const Color(0xFFF1F8E9),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: Color(0xFFC5E1A5)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline, color: Color(0xFF558B2F)),
+                    const SizedBox(width: AppSpacing.md),
+                    Text(
+                      '${entry.emptyCount} Empty Slots Available',
+                      style: const TextStyle(
+                        color: Color(0xFF33691E),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
-                  ),
-          );
+                  ],
+                ),
+              ),
+            );
+          }
+
+          if (entry.bike != null) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: BikeCard(
+                slotNumber: entry.slotNumber ?? 0,
+                bikeModel: entry.bike!.model,
+                condition: entry.bike!.condition.displayName,
+                isAvailable: entry.bike!.isAvailable,
+                onBook: () =>
+                    _onBikeTap(context, viewModel, station, entry.bike!),
+              ),
+            );
+          }
+
+          return const SizedBox.shrink();
         },
       ),
     );
@@ -235,34 +244,22 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
   ) {
     final entries = <_SlotEntry>[];
 
+    // Added available bikes
     for (final bike in viewModel.availableBikes) {
       entries.add(_SlotEntry(slotNumber: bike.slotNumber, bike: bike));
     }
 
-    for (final bike in viewModel.unavailableBikes) {
-      entries.add(_SlotEntry(slotNumber: bike.slotNumber, bike: bike));
+    // Add empty slots summary
+    final emptyCount = viewModel.emptySlots;
+    if (emptyCount > 0) {
+      entries.add(_SlotEntry(isEmptySummary: true, emptyCount: emptyCount));
     }
 
-    final usedSlots = viewModel.bikes.map((bike) => bike.slotNumber).toSet();
-    for (var slot = 1; slot <= station.totalSlots; slot++) {
-      if (!usedSlots.contains(slot)) {
-        entries.add(_SlotEntry(slotNumber: slot));
-      }
-    }
-
+    // Sort bikes by slot number, but keep summary at the bottom
     entries.sort((a, b) {
-      int rank(_SlotEntry e) {
-        if (e.bike == null) {
-          return 2;
-        }
-        return e.bike!.isAvailable ? 0 : 1;
-      }
-
-      final rankDiff = rank(a).compareTo(rank(b));
-      if (rankDiff != 0) {
-        return rankDiff;
-      }
-      return a.slotNumber.compareTo(b.slotNumber);
+      if (a.isEmptySummary) return 1;
+      if (b.isEmptySummary) return -1;
+      return (a.slotNumber ?? 0).compareTo(b.slotNumber ?? 0);
     });
 
     return entries;
@@ -305,8 +302,15 @@ class _StationDetailScreenState extends State<StationDetailScreen> {
 }
 
 class _SlotEntry {
-  const _SlotEntry({required this.slotNumber, this.bike});
+  const _SlotEntry({
+    this.slotNumber,
+    this.bike,
+    this.isEmptySummary = false,
+    this.emptyCount = 0,
+  });
 
-  final int slotNumber;
+  final int? slotNumber;
   final Bike? bike;
+  final bool isEmptySummary;
+  final int emptyCount;
 }

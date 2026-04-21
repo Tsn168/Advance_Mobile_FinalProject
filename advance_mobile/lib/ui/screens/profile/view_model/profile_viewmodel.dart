@@ -27,6 +27,7 @@ class ProfileViewModel extends ChangeNotifier {
   Pass? _activePass;
   List<Booking> _bookingHistory = [];
   StreamSubscription<Pass?>? _passSubscription;
+  StreamSubscription<List<Booking>>? _bookingsSubscription;
 
   constants.AppState get state => _state;
   String? get errorMessage => _errorMessage;
@@ -65,6 +66,14 @@ class ProfileViewModel extends ChangeNotifier {
         _activePass = pass;
         notifyListeners();
       });
+
+      // Listen for booking history changes
+      _bookingsSubscription?.cancel();
+      _bookingsSubscription =
+          _bookingRepository.watchBookingsByUserId(userId).listen((bookings) {
+        _bookingHistory = bookings;
+        notifyListeners();
+      });
     } catch (error) {
       _state = constants.AppState.error;
       _errorMessage = ErrorHandlerService.handleError(error);
@@ -80,6 +89,7 @@ class ProfileViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _passSubscription?.cancel();
+    _bookingsSubscription?.cancel();
     super.dispose();
   }
 }
