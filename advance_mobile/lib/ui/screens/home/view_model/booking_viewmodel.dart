@@ -264,9 +264,7 @@ class BookingViewModel extends ChangeNotifier {
 
       try {
         final station = await _stationRepository.getStationById(stationId);
-        final nextAvailability = station == null
-            ? 0
-            : (station.availableBikes > 0 ? station.availableBikes - 1 : 0);
+        final nextAvailability = station?.availableBikes ?? 0;
 
         await _stationRepository.updateStationAvailability(
           stationId,

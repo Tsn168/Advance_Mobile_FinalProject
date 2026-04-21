@@ -3,35 +3,58 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
-import '../../../model/bike/bike.dart';
 import '../../../model/station/station.dart';
+import '../../../service_locator.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_text_styles.dart';
-import 'view_model/bike_viewmodel.dart';
-import '../home/view_model/booking_viewmodel.dart';
+import '../../widgets/station_bottom_sheet.dart';
+import '../../widgets/station_marker.dart';
 import '../station_detail/station_detail_screen.dart';
+import '../station_detail/view_model/station_detail_view_model.dart';
 import 'view_model/map_viewmodel.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key, required this.onNavigateToPlans});
+  const MapScreen({
+    super.key,
+    required this.onNavigateToPlans,
+    this.showMapWidget = true,
+  });
 
   final VoidCallback onNavigateToPlans;
+  final bool showMapWidget;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
 }
 
 class _MapScreenState extends State<MapScreen> {
+  String? _selectedStationId;
+
   @override
   Widget build(BuildContext context) {
-    return Consumer3<MapViewModel, BikeViewModel, BookingViewModel>(
-      builder: (context, mapViewModel, bikeViewModel, bookingViewModel, _) {
+    return Consumer<MapViewModel>(
+      builder: (context, mapViewModel, _) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Find Stations'),
+            leading: IconButton(
+              onPressed: () {},
+              icon: const Icon(Icons.menu),
+            ),
+            title: const Text(
+              'KINETIC',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             centerTitle: true,
             actions: [
+              const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Color(0xFFE3F2FD),
+                  child: Icon(Icons.person, size: 18, color: AppColors.primary),
+                ),
+              ),
               IconButton(
                 onPressed: mapViewModel.refreshStations,
                 icon: const Icon(Icons.refresh_rounded),
@@ -48,12 +71,7 @@ class _MapScreenState extends State<MapScreen> {
                 _buildGoogleMap(mapViewModel),
                 const SizedBox(height: AppSpacing.md),
                 Expanded(
-                  child: _buildStationList(
-                    context,
-                    mapViewModel,
-                    bikeViewModel,
-                    bookingViewModel,
-                  ),
+                  child: _buildStationMarkers(context, mapViewModel),
                 ),
               ],
             ),
@@ -64,7 +82,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget _buildGoogleMap(MapViewModel mapViewModel) {
-    if (mapViewModel.stations.isEmpty) {
+    if (!widget.showMapWidget || mapViewModel.stations.isEmpty) {
       return _buildMapPlaceholder();
     }
 
@@ -82,14 +100,38 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: GoogleMap(
-        initialCameraPosition: mapViewModel.initialCameraPosition,
-        onMapCreated: mapViewModel.onMapCreated,
-        markers: mapViewModel.markers,
-        mapToolbarEnabled: false,
-        zoomControlsEnabled: false,
-        myLocationEnabled: false,
-        myLocationButtonEnabled: false,
+      child: Stack(
+        children: [
+          GoogleMap(
+            initialCameraPosition: mapViewModel.initialCameraPosition,
+            onMapCreated: mapViewModel.onMapCreated,
+            markers: mapViewModel.markers,
+            mapToolbarEnabled: false,
+            zoomControlsEnabled: false,
+            myLocationEnabled: false,
+            myLocationButtonEnabled: false,
+          ),
+          Positioned(
+            left: 12,
+            right: 12,
+            top: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Find your nearest station',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF455A64),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -116,12 +158,12 @@ class _MapScreenState extends State<MapScreen> {
             const Icon(Icons.map_rounded, size: 44, color: AppColors.white),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Live Station Overview',
+              'Station Overview',
               style: AppTextStyles.h5.copyWith(color: AppColors.white),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Map will appear after stations load',
+              'Find your nearest station',
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.white.withValues(alpha: 0.86),
               ),
@@ -132,11 +174,9 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _buildStationList(
+  Widget _buildStationMarkers(
     BuildContext context,
     MapViewModel mapViewModel,
-    BikeViewModel bikeViewModel,
-    BookingViewModel bookingViewModel,
   ) {
     if (mapViewModel.state == AppState.loading) {
       return const Center(child: CircularProgressIndicator());
@@ -156,209 +196,140 @@ class _MapScreenState extends State<MapScreen> {
       return const Center(child: Text('No stations available'));
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      itemCount: stations.length,
-      itemBuilder: (context, index) {
-        final station = stations[index];
-        final isSelected = mapViewModel.selectedStation?.id == station.id;
-
-        return Card(
-          margin: const EdgeInsets.only(bottom: AppSpacing.md),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: isSelected ? AppColors.primary : AppColors.border,
-              width: isSelected ? 2 : 1,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Text(
+            'Tap a station marker',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF455A64),
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(station.name, style: AppTextStyles.h5),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            station.address ?? 'No address',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.grey600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _availabilityBadge(station),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          mapViewModel.selectStation(station.id);
-                          await bikeViewModel.loadBikesByStation(station.id);
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          height: 120,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            scrollDirection: Axis.horizontal,
+            itemCount: stations.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              final station = stations[index];
+              final selectedId =
+                  _selectedStationId ?? mapViewModel.selectedStationId;
+              final isSelected = selectedId == station.id;
 
-                          if (!context.mounted) {
-                            return;
-                          }
-
-                          await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  StationDetailScreen(stationId: station.id),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.list),
-                        label: const Text('View Bikes'),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: station.hasAvailableBikes
-                            ? () async {
-                                await bikeViewModel.loadBikesByStation(
-                                  station.id,
-                                );
-                                await _attemptBooking(
-                                  station,
-                                  bikeViewModel,
-                                  bookingViewModel,
-                                );
-                              }
-                            : null,
-                        icon: const Icon(Icons.directions_bike),
-                        label: const Text('Book Now'),
-                      ),
-                    ),
-                  ],
-                ),
-                if (isSelected && bikeViewModel.bikes.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  const Text(
-                    'Station bikes',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  StationMarker(
+                    key: Key('station_marker_${station.id}'),
+                    availableBikes: station.availableBikes,
+                    isSelected: isSelected,
+                    onTap: () =>
+                        _onStationSelected(context, mapViewModel, station.id),
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Wrap(
-                    spacing: AppSpacing.xs,
-                    runSpacing: AppSpacing.xs,
-                    children: bikeViewModel.bikes.map((bike) {
-                      return Chip(
-                        label: Text(
-                          '#${bike.slotNumber} ${bike.status.displayName}',
-                          style: AppTextStyles.labelMedium,
-                        ),
-                        backgroundColor: bike.status == BikeStatus.available
-                            ? AppColors.success.withValues(alpha: 0.18)
-                            : AppColors.surfaceVariant,
-                        side: BorderSide(
-                          color: bike.status == BikeStatus.available
-                              ? AppColors.success.withValues(alpha: 0.32)
-                              : AppColors.border,
-                        ),
-                      );
-                    }).toList(),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: 90,
+                    child: Text(
+                      station.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF546E7A),
+                      ),
+                    ),
                   ),
                 ],
-              ],
-            ),
+              );
+            },
           ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _onStationSelected(
+    BuildContext context,
+    MapViewModel mapViewModel,
+    String stationId,
+  ) async {
+    setState(() {
+      _selectedStationId = stationId;
+    });
+    mapViewModel.selectStation(stationId);
+
+    final openStationDetail = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Consumer<MapViewModel>(
+          builder: (context, liveMapViewModel, _) {
+            final selectedId =
+                _selectedStationId ?? liveMapViewModel.selectedStationId;
+            final station = _findStationById(
+              liveMapViewModel.stations,
+              selectedId,
+            );
+
+            if (station == null) {
+              return const SizedBox.shrink();
+            }
+
+            return StationBottomSheet(
+              station: station,
+              onViewBikes: () => Navigator.of(sheetContext).pop(true),
+            );
+          },
         );
       },
     );
+
+    if (openStationDetail == true) {
+      await _openStationDetail();
+    }
   }
 
-  Widget _availabilityBadge(Station station) {
-    final hasBikes = station.hasAvailableBikes;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: hasBikes
-            ? AppColors.success.withValues(alpha: 0.12)
-            : AppColors.error.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        '${station.availableBikes} bikes',
-        style: TextStyle(
-          color: hasBikes ? AppColors.success : AppColors.error,
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _attemptBooking(
-    Station station,
-    BikeViewModel bikeViewModel,
-    BookingViewModel bookingViewModel,
-  ) async {
-    final messenger = ScaffoldMessenger.of(context);
-
-    final availableBikes = bikeViewModel.availableBikes;
-    if (availableBikes.isEmpty) {
-      if (!mounted) {
-        return;
-      }
-      messenger.showSnackBar(
-        const SnackBar(content: Text('No available bikes at this station')),
-      );
+  Future<void> _openStationDetail() async {
+    final stationId = _selectedStationId;
+    if (stationId == null) {
       return;
     }
-
-    final bike = availableBikes.first;
-    final success = await bookingViewModel.bookBike(
-      bikeId: bike.id,
-      stationId: station.id,
-      slotNumber: bike.slotNumber,
-    );
 
     if (!mounted) {
       return;
     }
 
-    if (success) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('Booked bike ${bike.id} at ${station.name}'),
-          backgroundColor: AppColors.success,
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider<StationDetailViewModel>(
+          create: (_) => getIt<StationDetailViewModel>(),
+          child: StationDetailScreen(stationId: stationId),
         ),
-      );
-      return;
-    }
-
-    if (bookingViewModel.flowStatus ==
-        BookingFlowStatus.requiresPassSelection) {
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Active pass required. Redirecting to Plans tab...'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      widget.onNavigateToPlans();
-      bookingViewModel.clearBookingPrompt();
-      return;
-    }
-
-    final message = bookingViewModel.errorMessage ?? 'Booking failed';
-    messenger.showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppColors.error),
+      ),
     );
+  }
+
+  Station? _findStationById(List<Station> stations, String? stationId) {
+    if (stationId == null) {
+      return null;
+    }
+
+    for (final station in stations) {
+      if (station.id == stationId) {
+        return station;
+      }
+    }
+    return null;
   }
 }
