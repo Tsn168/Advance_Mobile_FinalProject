@@ -66,6 +66,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
             child: Column(
               children: [
+                _buildBikeStatsHeader(mapViewModel),
                 _buildGoogleMap(mapViewModel),
                 const SizedBox(height: AppSpacing.md),
                 Expanded(
@@ -76,6 +77,68 @@ class _MapScreenState extends State<MapScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBikeStatsHeader(MapViewModel mapViewModel) {
+    int totalBikes = 0;
+    int totalAvailable = 0;
+
+    for (final station in mapViewModel.stations) {
+      totalBikes += station.totalSlots;
+      totalAvailable += station.availableBikes;
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Available Bikes',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.white.withValues(alpha: 0.87),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '$totalAvailable/$totalBikes',
+                style: AppTextStyles.h4.copyWith(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.directions_bike,
+              color: AppColors.white,
+              size: 32,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
