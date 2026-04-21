@@ -9,6 +9,7 @@ import 'ui/screens/home/view_model/booking_viewmodel.dart';
 import 'ui/screens/map/view_model/bike_viewmodel.dart';
 import 'ui/screens/map/view_model/map_viewmodel.dart';
 import 'ui/screens/plans/view_model/pass_viewmodel.dart';
+import 'ui/screens/profile/view_model/profile_viewmodel.dart';
 import 'ui/states/app_state.dart';
 import 'ui/states/navigation_state.dart';
 import 'ui/screens/splash/prelaunch_splash_screen.dart';
@@ -48,6 +49,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => getIt<BikeViewModel>()),
         ChangeNotifierProvider(
           create: (_) => getIt<BookingViewModel>()..initialize(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => getIt<ProfileViewModel>()..initialize('user_reyu'),
         ),
       ],
       child: MaterialApp(

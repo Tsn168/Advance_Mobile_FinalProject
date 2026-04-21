@@ -284,7 +284,7 @@ class _MapScreenState extends State<MapScreen> {
             itemBuilder: (context, index) {
               final station = stations[index];
               final selectedId =
-                  _selectedStationId ?? mapViewModel.selectedStationId;
+                  _selectedStationId ?? mapViewModel.selectedStation?.id;
               final isSelected = selectedId == station.id;
 
               return Column(
@@ -339,7 +339,7 @@ class _MapScreenState extends State<MapScreen> {
         return Consumer<MapViewModel>(
           builder: (context, liveMapViewModel, _) {
             final selectedId =
-                _selectedStationId ?? liveMapViewModel.selectedStationId;
+                _selectedStationId ?? liveMapViewModel.selectedStation?.id;
             final station = _findStationById(
               liveMapViewModel.stations,
               selectedId,

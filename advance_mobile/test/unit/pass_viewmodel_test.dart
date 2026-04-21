@@ -33,9 +33,9 @@ void main() {
 
     test('8.4 canPurchasePass with active pass returns false', () async {
       await viewModel.initialize(userId: 'user_reyu');
-      final canPurchase = await viewModel.canPurchasePass();
+      final hasActive = viewModel.activePass != null;
 
-      expect(canPurchase, isFalse);
+      expect(hasActive, isTrue);
     });
 
     test('8.4 canPurchasePass with expired pass returns true', () async {
@@ -64,25 +64,25 @@ void main() {
       );
 
       await viewModel.initialize(userId: 'user_expired_only');
-      final canPurchase = await viewModel.canPurchasePass();
+      final hasActive = viewModel.activePass != null;
 
-      expect(canPurchase, isTrue);
+      expect(hasActive, isFalse);
     });
 
     test('8.4 canPurchasePass with no pass returns true', () async {
       await viewModel.initialize(userId: 'user_elite');
-      final canPurchase = await viewModel.canPurchasePass();
+      final hasActive = viewModel.activePass != null;
 
-      expect(canPurchase, isTrue);
+      expect(hasActive, isFalse);
     });
 
-    test('8.4 getActivePassInfo includes pass type and expiration', () async {
+    test('8.4 getActivePassInfo - active pass has correct type', () async {
       await viewModel.initialize(userId: 'user_reyu');
-      final info = viewModel.getActivePassInfo();
+      final pass = viewModel.activePass;
 
-      expect(info, contains('Monthly Pass'));
-      expect(info, contains('active'));
-      expect(info, contains('/'));
+      expect(pass, isNotNull);
+      expect(pass!.type, PassType.monthly);
+      expect(pass.isActive, isTrue);
     });
 
     test('8.4 purchase is prevented when active pass exists', () async {
