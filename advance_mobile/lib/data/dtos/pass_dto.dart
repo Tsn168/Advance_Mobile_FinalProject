@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../model/pass/pass.dart';
 
 /// Pass DTO - Data Transfer Object for Pass
@@ -94,9 +92,6 @@ class PassDTO {
   static DateTime? _parseDateTime(dynamic value) {
     if (value == null) {
       return null;
-    }
-    if (value is Timestamp) {
-      return value.toDate();
     }
     if (value is DateTime) {
       return value;

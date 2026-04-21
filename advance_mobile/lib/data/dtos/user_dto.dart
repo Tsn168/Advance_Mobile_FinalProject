@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../model/user/user.dart';
 
 /// User DTO - Data Transfer Object for User
@@ -80,9 +78,6 @@ class UserDTO {
   static DateTime? _parseDateTime(dynamic value) {
     if (value == null) {
       return null;
-    }
-    if (value is Timestamp) {
-      return value.toDate();
     }
     if (value is DateTime) {
       return value;
