@@ -100,8 +100,6 @@ class MockBookingRepository implements IBookingRepository {
     );
 
     _store.bookings.add(createdBooking);
-    _store.bikes[bikeIndex] = bike.copyWith(status: BikeStatus.booked);
-    _store.syncStationAvailability(booking.stationId);
     _store.notifyChanged();
 
     return createdBooking;

@@ -1,8 +1,10 @@
 import 'package:advance_mobile/data/repositories/bike/bike_repository.dart';
+import 'package:advance_mobile/data/repositories/bike/bike_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/booking/booking_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/mock_data_store.dart';
 import 'package:advance_mobile/data/repositories/pass/pass_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/station/station_repository.dart';
+import 'package:advance_mobile/data/repositories/station/station_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/user/user_repository_mock.dart';
 import 'package:advance_mobile/model/bike/bike.dart';
 import 'package:advance_mobile/model/station/station.dart';
@@ -28,6 +30,8 @@ void main() {
     bookingViewModel = BookingViewModel(
       MockBookingRepository(store),
       MockPassRepository(store),
+      MockBikeRepository(store),
+      MockStationRepository(store),
     );
     passViewModel = PassViewModel(
       MockPassRepository(store),

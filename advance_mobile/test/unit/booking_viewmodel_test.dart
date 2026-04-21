@@ -1,21 +1,33 @@
+import 'package:advance_mobile/data/repositories/bike/bike_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/booking/booking_repository_mock.dart';
 import 'package:advance_mobile/data/repositories/mock_data_store.dart';
 import 'package:advance_mobile/data/repositories/pass/pass_repository_mock.dart';
+import 'package:advance_mobile/data/repositories/station/station_repository_mock.dart';
+import 'package:advance_mobile/model/bike/bike.dart';
 import 'package:advance_mobile/ui/screens/home/view_model/booking_viewmodel.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('BookingViewModel', () {
     late MockDataStore store;
+    late MockBikeRepository bikeRepository;
     late MockBookingRepository bookingRepository;
     late MockPassRepository passRepository;
+    late MockStationRepository stationRepository;
     late BookingViewModel viewModel;
 
     setUp(() {
       store = MockDataStore();
+      bikeRepository = MockBikeRepository(store);
       bookingRepository = MockBookingRepository(store);
       passRepository = MockPassRepository(store);
-      viewModel = BookingViewModel(bookingRepository, passRepository);
+      stationRepository = MockStationRepository(store);
+      viewModel = BookingViewModel(
+        bookingRepository,
+        passRepository,
+        bikeRepository,
+        stationRepository,
+      );
     });
 
     tearDown(() {
@@ -133,7 +145,12 @@ void main() {
         final userId = scenario.$1;
         final expectedHasPass = scenario.$2;
 
-        final scenarioViewModel = BookingViewModel(bookingRepository, passRepository);
+        final scenarioViewModel = BookingViewModel(
+          bookingRepository,
+          passRepository,
+          bikeRepository,
+          stationRepository,
+        );
         addTearDown(scenarioViewModel.dispose);
 
         await scenarioViewModel.initialize(userId: userId);
@@ -155,6 +172,60 @@ void main() {
           );
         }
       }
+    });
+
+    test('bookBike updates bike status to booked after booking', () async {
+      await viewModel.initialize();
+
+      final success = await viewModel.bookBike(
+        bikeId: 'bike_c1',
+        stationId: 'station_central',
+        slotNumber: 1,
+      );
+
+      expect(success, isTrue);
+      final bike = await bikeRepository.getBikeById('bike_c1');
+      expect(bike?.status, BikeStatus.booked);
+    });
+
+    test('bookBike decrements station availability after booking', () async {
+      await viewModel.initialize();
+      final before = await stationRepository.getStationById('station_central');
+
+      final success = await viewModel.bookBike(
+        bikeId: 'bike_c2',
+        stationId: 'station_central',
+        slotNumber: 2,
+      );
+
+      final after = await stationRepository.getStationById('station_central');
+      expect(success, isTrue);
+      expect(after, isNotNull);
+      expect(before, isNotNull);
+      expect(after!.availableBikes, before!.availableBikes - 1);
+    });
+
+    test('confirmBooking prevents concurrent booking with clear error message', () async {
+      await viewModel.initialize();
+      await viewModel.prepareBooking(
+        bikeId: 'bike_t1',
+        stationId: 'station_terminal',
+        slotNumber: 1,
+      );
+
+      final bikeIndex = store.bikes.indexWhere((bike) => bike.id == 'bike_t1');
+      store.bikes[bikeIndex] = store.bikes[bikeIndex].copyWith(
+        status: BikeStatus.booked,
+      );
+      store.syncStationAvailability('station_terminal');
+
+      final success = await viewModel.confirmBooking();
+
+      expect(success, isFalse);
+      expect(viewModel.flowStatus, BookingFlowStatus.failed);
+      expect(viewModel.errorMessage, contains('no longer available'));
+      expect(viewModel.errorMessage, contains('refresh the bike list'));
+      expect(viewModel.errorMessage, contains('go back to station details'));
     });
 
     test('completeCurrentBooking clears active booking', () async {

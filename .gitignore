@@ -50,6 +50,7 @@ advance_mobile/DESIGN.md
 .vscode/
 .kilo/
 .github/
+AGENTS.md
 advance_mobile/scripts/
 # Local environment secrets
 .env
