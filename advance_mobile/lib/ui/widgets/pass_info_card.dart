@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../model/pass/pass.dart';
-import '../../ui/theme/app_colors.dart';
 import '../../ui/theme/app_dimensions.dart';
 import '../../ui/theme/app_spacing.dart';
 import '../../ui/theme/app_text_styles.dart';

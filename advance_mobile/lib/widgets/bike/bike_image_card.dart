@@ -234,3 +234,5 @@ class BikeImageCard extends StatelessWidget {
      ),
    );
  }
+
+}

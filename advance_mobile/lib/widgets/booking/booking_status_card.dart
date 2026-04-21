@@ -222,7 +222,7 @@ class BookingStatusCard extends StatelessWidget {
                     onPressed: onCancel,
                     backgroundColor: AppColors.error,
                  ),
-               ],
+               ),
              ],
            ),
          ],

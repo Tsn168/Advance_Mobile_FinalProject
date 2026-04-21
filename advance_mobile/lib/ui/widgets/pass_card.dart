@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../model/pass/pass.dart';
 import '../../ui/theme/app_colors.dart';
 import '../../ui/theme/app_dimensions.dart';
-import '../../ui/theme/app_spacing.dart';
 
 class PassCard extends StatelessWidget {
   final PassType passType;

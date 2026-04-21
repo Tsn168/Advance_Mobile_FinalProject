@@ -5,7 +5,7 @@ import '../../../config/app_constants.dart';
 import '../../../model/pass/pass.dart';
 import '../../widgets/pass_card.dart';
 import '../../widgets/pass_info_card.dart';
-import '../../ui/theme/app_colors.dart';
+import '../../theme/app_colors.dart';
 import 'view_model/pass_viewmodel.dart';
 
 class PlansScreen extends StatefulWidget {

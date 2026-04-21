@@ -140,6 +140,7 @@ class BikeStatusWidget extends StatelessWidget {
             _buildNextMaintenanceInfo(),
           ],
         ],
+        ),
       ),
     );
   }
@@ -255,12 +256,12 @@ class BikeStatusWidget extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                    ),
-                 ),
+                 ],
                ),
              ),
            ],
          ),
        ],
-     ),
-   );
+     );
  }
+}

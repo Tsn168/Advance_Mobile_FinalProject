@@ -11,7 +11,6 @@ import 'data/repositories/mock_data_store.dart';
 import 'data/repositories/pass/pass_repository.dart';
 import 'data/repositories/pass/pass_repository_firebase.dart';
 import 'data/repositories/pass/pass_repository_mock.dart';
-import 'services/error_handler.dart';
 import 'data/repositories/station/station_repository.dart';
 import 'data/repositories/station/station_repository_firebase.dart';
 import 'data/repositories/station/station_repository_mock.dart';

@@ -6,6 +6,9 @@ import 'package:provider/provider.dart';
 import '../../../config/app_constants.dart';
 import '../../../model/bike/bike.dart';
 import '../../../model/station/station.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
+import '../../theme/app_text_styles.dart';
 import '../home/view_model/booking_viewmodel.dart';
 import '../plans/plans_screen.dart';
 import '../plans/view_model/pass_viewmodel.dart';
@@ -59,7 +62,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             bookingViewModel.flowStatus == BookingFlowStatus.booking;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Confirm Booking')),
+          appBar: AppBar(
+        title: const Text('Confirm Booking'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
+      ),
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -84,15 +91,17 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
   Widget _buildBookingSummaryCard() {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Booking Summary',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: AppTextStyles.h5,
             ),
             const SizedBox(height: 12),
             Text('Station: ${widget.station.name}'),
@@ -118,15 +127,17 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     final hasPass = passViewModel.hasActivePass;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Authorization',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: AppTextStyles.bodyMedium,
             ),
             const SizedBox(height: 12),
             if (isProcessing) ...[
@@ -155,14 +166,15 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       children: [
         Row(
           children: const [
-            Icon(Icons.verified, color: Color(0xFF2E7D32)),
+            Icon(
+              Icons.verified,
+              color: Color(0xFF2E7D32),
+              semanticLabel: 'Pass verified',
+            ),
             SizedBox(width: 8),
             Text(
               'Active Pass',
-              style: TextStyle(
-                color: Color(0xFF2E7D32),
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.bodyMedium,
             ),
           ],
         ),

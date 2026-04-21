@@ -168,3 +168,4 @@ class BikeCard extends StatelessWidget {
      ),
    );
  }
+}

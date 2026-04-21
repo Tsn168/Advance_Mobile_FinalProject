@@ -177,6 +177,7 @@ class StationCard extends StatelessWidget {
             ],
           ),
         ],
+        ),
       ),
     );
   }

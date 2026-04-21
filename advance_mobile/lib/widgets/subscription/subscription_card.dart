@@ -211,6 +211,7 @@ class SubscriptionCard extends StatelessWidget {
           ),
         ],
       ),
+      ),
     );
   }
 }

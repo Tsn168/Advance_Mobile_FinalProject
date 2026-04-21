@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../../../config/app_constants.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_dimensions.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_text_styles.dart';
 import 'view_model/booking_viewmodel.dart';
 import '../plans/view_model/pass_viewmodel.dart';
 
@@ -20,7 +22,12 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Bike Sharing'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Bike Sharing'),
+        centerTitle: true,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           await context.read<PassViewModel>().loadUserPasses();
@@ -53,14 +60,15 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Row(
                   children: const [
-                    Icon(Icons.card_membership, color: AppColors.primary),
+                    Icon(
+                      Icons.card_membership,
+                      color: AppColors.primary,
+                      semanticLabel: 'Pass Icon',
+                    ),
                     SizedBox(width: AppSpacing.sm),
                     Text(
                       'Active Pass',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextStyles.h5,
                     ),
                   ],
                 ),
@@ -70,10 +78,7 @@ class HomeScreen extends StatelessWidget {
                 else if (hasActivePass) ...[
                   Text(
                     activePass.type.displayName,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTextStyles.h5,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
@@ -121,7 +126,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Current Booking',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.h5,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 if (bookingViewModel.state == AppState.loading)
@@ -213,7 +218,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             const Text(
               'Quick Stats',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: AppTextStyles.h5,
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
@@ -244,6 +249,9 @@ class _StatCard extends StatelessWidget {
     return Expanded(
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.cardBorderRadius),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
@@ -253,17 +261,14 @@ class _StatCard extends StatelessWidget {
                 maxLines: 2,
                 textAlign: TextAlign.center,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
+                style: AppTextStyles.h4.copyWith(color: AppColors.primary),
+                semanticsLabel: '$title: $value',
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12, color: AppColors.grey600),
+                style: AppTextStyles.caption.copyWith(color: AppColors.grey600),
               ),
             ],
           ),

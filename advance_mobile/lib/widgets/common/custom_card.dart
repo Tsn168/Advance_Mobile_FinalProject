@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../ui/theme/app_dimensions.dart';
-import '../../ui/theme/app_spacing.dart';
 
 class CustomCard extends StatelessWidget {
   final Widget child;
