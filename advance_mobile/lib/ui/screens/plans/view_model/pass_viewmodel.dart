@@ -87,13 +87,6 @@ class PassViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  String getActivePassInfo() {
-    final pass = _activePass;
-    if (pass == null) return 'No active subscription';
-
-    final days = pass.expiryDate.difference(DateTime.now()).inDays;
-    return '${pass.type.displayName} active - $days days remaining';
-  }
 
   Future<bool> purchaseSelectedPass() async {
     final passType = _selectedPassType;

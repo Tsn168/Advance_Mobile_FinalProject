@@ -1,7 +1,7 @@
 import 'package:advance_mobile/data/repositories/bike/bike_repository.dart';
 import 'package:advance_mobile/data/repositories/station/station_repository.dart';
 import 'package:advance_mobile/service_locator.dart';
-import 'package:advance_mobile/ui/screens/home/view_model/booking_viewmodel.dart';
+import 'package:advance_mobile/ui/screens/map/view_model/booking_viewmodel.dart';
 import 'package:advance_mobile/ui/screens/station_detail/view_model/station_detail_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 

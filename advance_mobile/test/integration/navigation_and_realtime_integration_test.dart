@@ -6,7 +6,7 @@ import 'package:advance_mobile/data/repositories/station/station_repository_mock
 import 'package:advance_mobile/data/repositories/user/user_repository_mock.dart';
 import 'package:advance_mobile/model/bike/bike.dart';
 import 'package:advance_mobile/service_locator.dart';
-import 'package:advance_mobile/ui/screens/home/view_model/booking_viewmodel.dart';
+import 'package:advance_mobile/ui/screens/map/view_model/booking_viewmodel.dart';
 import 'package:advance_mobile/ui/screens/map/map_screen.dart';
 import 'package:advance_mobile/ui/screens/map/view_model/map_viewmodel.dart';
 import 'package:advance_mobile/ui/screens/plans/view_model/pass_viewmodel.dart';

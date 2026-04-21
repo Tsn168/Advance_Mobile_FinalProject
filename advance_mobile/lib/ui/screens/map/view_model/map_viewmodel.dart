@@ -27,7 +27,6 @@ class MapViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   List<Station> get stations => _stations;
   Station? get selectedStation => _selectedStation;
-  String? get selectedStationId => _selectedStation?.id;
   Set<Marker> get markers => _markers;
 
   Station? getStationById(String stationId) {

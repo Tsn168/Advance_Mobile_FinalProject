@@ -5,6 +5,8 @@ import '../../../../data/repositories/booking/booking_repository.dart';
 import '../../../../data/repositories/pass/pass_repository.dart';
 import '../../../../model/booking/booking.dart';
 import '../../../../model/pass/pass.dart';
+import '../../../../data/repositories/bike/bike_repository.dart';
+import '../../../../data/repositories/station/station_repository.dart';
 
 enum BookingFlowStatus {
   idle,
@@ -19,8 +21,15 @@ enum BookingFlowStatus {
 class BookingViewModel extends ChangeNotifier {
   final IBookingRepository _bookingRepository;
   final IPassRepository _passRepository;
+  final IBikeRepository? bikeRepository;
+  final IStationRepository? stationRepository;
 
-  BookingViewModel(this._bookingRepository, this._passRepository);
+  BookingViewModel(
+    this._bookingRepository,
+    this._passRepository, {
+    this.bikeRepository,
+    this.stationRepository,
+  });
 
   AppState _state = AppState.idle;
   AppState get state => _state;
